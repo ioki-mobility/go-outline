@@ -13,5 +13,5 @@ func New(baseURL string, apiKey secret.Text) *Client { return nil }
 // Documents creates client for operating on documents.
 func (cl *Client) Documents() *DocumentsClient { return nil }
 
-// Documents creates client for operating on collections.
+// Collections creates client for operating on collections.
 func (cl *Client) Collections() *CollectionsClient { return nil }

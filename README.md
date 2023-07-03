@@ -3,9 +3,7 @@
 [def]: https://www.getoutline.com/
 
 
-
 # Usage
-
 
 ## Client
 Getting a single document by its id:
@@ -25,7 +23,6 @@ cl.Documents().GetAll().Collection("collection id").Do(context.Background(), fun
 		fmt.Println(d)
 		return true
 	})
-}
 ```
 
 
