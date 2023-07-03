@@ -36,7 +36,7 @@ func (cl *DocumentsClientGet) Do(ctx context.Context) (*Document, error) { retur
 type DocumentsClientGetAll struct{}
 
 // Collection selects documents belonging to the collection identified by id.
-func (cl *DocumentsClientGetAll) Collection(id CollecionID) *DocumentsClientGetAll { return nil }
+func (cl *DocumentsClientGetAll) Collection(id CollectionID) *DocumentsClientGetAll { return nil }
 
 // Parent selects documents having the parent document identified by id.
 func (cl *DocumentsClientGetAll) Parent(id DocumentID) *DocumentsClientGetAll { return nil }

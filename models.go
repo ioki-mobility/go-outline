@@ -4,7 +4,7 @@ type (
 	DocumentID      string
 	DocumentShareID string
 	DocumentUrlID   string
-	CollecionID     string
+	CollectionID    string
 )
 
 // Document represents an outline document.
