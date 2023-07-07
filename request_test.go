@@ -82,7 +82,7 @@ func Test_request_returns_bad_response(t *testing.T) {
 	}
 }
 
-func Test_makeRequest(t *testing.T) {
+func Test_request(t *testing.T) {
 	type testModel struct {
 		Field1 string  `json:"field_1"`
 		Field2 float64 `json:"field_2"`
