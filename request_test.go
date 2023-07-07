@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/ioki-mobility/go-outline/internal/testutils"
+
 	"github.com/dghubble/sling"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -16,7 +18,8 @@ import (
 
 func Test_request_failed(t *testing.T) {
 	client := &http.Client{}
-	client.Transport = &mockRoundTripper{
+
+	client.Transport = &testutils.MockRoundTripper{
 		RoundTripFn: func(req *http.Request) (*http.Response, error) {
 			return nil, &net.DNSError{} // simulate irrecoverable error
 		},
@@ -60,7 +63,7 @@ func Test_request_returns_bad_response(t *testing.T) {
 	for name, test := range tests {
 		t.Run(name, func(t *testing.T) {
 			client := &http.Client{}
-			client.Transport = &mockRoundTripper{
+			client.Transport = &testutils.MockRoundTripper{
 				RoundTripFn: func(req *http.Request) (*http.Response, error) {
 					return &http.Response{
 						Request:       req,
@@ -88,7 +91,7 @@ func Test_makeRequest(t *testing.T) {
 	// Create HTTP client and override its transport to simulate server returning a good response with valid JSON data
 	// of testModel type.
 	client := &http.Client{}
-	client.Transport = &mockRoundTripper{
+	client.Transport = &testutils.MockRoundTripper{
 		RoundTripFn: func(req *http.Request) (*http.Response, error) {
 			return &http.Response{
 				Request:       req,
@@ -110,21 +113,4 @@ func Test_makeRequest(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Nil(t, ed)
 	assert.Equal(t, expected, got)
-}
-
-// mockRoundTripper implements [http.RoundTripper] interface. The tests can use this to mock HTTP transaction without
-// creating a test HTTP server. Just override the RoundTripFn to shortcircuit and return whatever response you want.
-type mockRoundTripper struct {
-	RoundTripFn func(*http.Request) (*http.Response, error)
-}
-
-func (m *mockRoundTripper) RoundTrip(req *http.Request) (*http.Response, error) {
-	if m.RoundTripFn != nil {
-		return m.RoundTripFn(req)
-	}
-
-	return &http.Response{
-		Request:    req,
-		StatusCode: http.StatusNoContent,
-	}, nil
 }
