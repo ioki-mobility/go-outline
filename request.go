@@ -3,6 +3,8 @@ package outline
 import (
 	"bytes"
 	"context"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/dghubble/sling"
@@ -45,4 +47,31 @@ func request(ctx context.Context, req *sling.Sling, success any) (*badResponse, 
 	}
 
 	return br, nil
+}
+
+// apiError wraps a bad HTTP response into an [error]. This allows bad response to be logged or chained to
+// another error for more context.
+type apiError struct {
+	br badResponse
+}
+
+func (ae *apiError) Error() string {
+	return fmt.Sprintf("%+v", ae.br)
+}
+
+// Temporary returns true for 5XX errors. This satifies the temporary interface and enables usage with
+// [outline.IsTemporary].
+func (ae *apiError) Temporary() bool {
+	return ae.br.status >= http.StatusInternalServerError && ae.br.status != http.StatusNotImplemented
+}
+
+// IsTemporary returns true if err is temporary in nature i.e. you can retry the same operation in some time.
+// This would usually return true for server side errors.
+func IsTemporary(err error) bool {
+	var e temporary
+	return errors.As(err, &e) && e.Temporary()
+}
+
+type temporary interface {
+	Temporary() bool
 }
