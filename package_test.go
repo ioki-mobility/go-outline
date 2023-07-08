@@ -7,7 +7,9 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
+	"sync/atomic"
 	"testing"
 
 	"github.com/ioki-mobility/go-outline"
@@ -83,7 +85,15 @@ func TestClientCollectionsGet(t *testing.T) {
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
-		testHeaders(t, r.Header)
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(testBaseURL, common.CollectionsGetEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(t, r, fmt.Sprintf(`{"id":"%s"}`, "collection id"))
+
 		return &http.Response{
 			Request:       r,
 			ContentLength: -1,
@@ -104,11 +114,68 @@ func TestClientCollectionsGet(t *testing.T) {
 	assert.Equal(t, &expected.Data, got)
 }
 
-func testHeaders(t *testing.T, headers http.Header) {
+func TestClientCollectionsList(t *testing.T) {
+	requestCount := atomic.Uint32{}
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		requestCount.Add(1)
+
+		assert.Equal(t, http.MethodPost, r.Method)
+		testAssertHeaders(t, r.Header)
+
+		if requestCount.Load() == 1 {
+			// Assert URL when asking first page.
+			u, err := url.JoinPath(testBaseURL, common.CollectionsListEndpoint())
+			require.NoError(t, err)
+			assert.Equal(t, u, r.URL.String())
+
+			return &http.Response{
+				Request:       r,
+				StatusCode:    http.StatusOK,
+				ContentLength: -1,
+				Body:          io.NopCloser(strings.NewReader(exampleCollectionsListResponse_2collections)),
+			}, nil
+		}
+
+		// Assert URL when asking second page (first page had 2 items).
+		// NOTE: There is some hard coding here but that is okay, no need to over-engineer as of now.
+		u, err := url.JoinPath(testBaseURL, common.CollectionsListEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u+"?offset=2", r.URL.String())
+
+		return &http.Response{
+			Request:       r,
+			StatusCode:    http.StatusOK,
+			ContentLength: -1,
+			Body:          io.NopCloser(strings.NewReader(exampleCollectionsListResponse_1collection)),
+		}, nil
+	}}
+
+	cl := outline.New(testBaseURL, hc, testApiKey)
+
+	collectionsListFnCalled := atomic.Uint32{}
+	err := cl.Collections().List().Do(context.Background(), func(c *outline.Collection, err error) (bool, error) {
+		collectionsListFnCalled.Add(1)
+		t.Log(c)
+		return true, nil
+	})
+	require.NoError(t, err)
+	assert.Equal(t, uint32(3), collectionsListFnCalled.Load())
+}
+
+func testAssertHeaders(t *testing.T, headers http.Header) {
 	t.Helper()
 	assert.Equal(t, headers.Get(common.HdrKeyAccept), common.HdrValueAccept)
 	assert.Equal(t, headers.Get(common.HdrKeyContentType), common.HdrValueContentType)
 	assert.Equal(t, fmt.Sprintf("Bearer %s", testApiKey), headers.Get(common.HdrKeyAuthorization))
+}
+
+func testAssertBody(t *testing.T, r *http.Request, expected string) {
+	t.Helper()
+	require.NotNil(t, r.Body)
+	b, err := io.ReadAll(r.Body)
+	require.NoError(t, err)
+	assert.JSONEq(t, expected, string(b))
 }
 
 const exampleCollectionsGetResponse string = `{
@@ -127,5 +194,73 @@ const exampleCollectionsGetResponse string = `{
     "createdAt": "2019-08-24T14:15:22Z",
     "updatedAt": "2019-08-24T14:15:22Z",
     "deletedAt": "2019-08-24T14:15:22Z"
+  }
+}`
+
+const exampleCollectionsListResponse_2collections string = `
+	{
+  "data": [
+    {
+      "id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+      "name": "Human Resources",
+      "description": "",
+      "sort": {
+        "field": "string",
+        "direction": "asc"
+      },
+      "index": "P",
+      "color": "#123123",
+      "icon": "string",
+      "permission": "read",
+      "createdAt": "2019-08-24T14:15:22Z",
+      "updatedAt": "2019-08-24T14:15:22Z",
+      "deletedAt": "2019-08-24T14:15:22Z"
+    },
+    {
+      "id": "111f6eca-6276-4993-bfeb-53cbbbba6f08",
+      "name": "Human Resources 2",
+      "description": "",
+      "sort": {
+        "field": "string",
+        "direction": "asc"
+      },
+      "index": "P",
+      "color": "#123123",
+      "icon": "string",
+      "permission": "read",
+      "createdAt": "2019-08-24T14:15:22Z",
+      "updatedAt": "2019-08-24T14:15:22Z",
+      "deletedAt": "2019-08-24T14:15:22Z"
+    }
+  ],
+  "pagination": {
+    "offset": 0,
+    "limit": 25
+  }
+}`
+
+const exampleCollectionsListResponse_1collection string = `
+	{
+  "data": [
+    {
+      "id": "111f6eca-6276-4993-bfeb-53cbbbba6f08",
+      "name": "Human Resources 3",
+      "description": "",
+      "sort": {
+        "field": "string",
+        "direction": "asc"
+      },
+      "index": "P",
+      "color": "#123123",
+      "icon": "string",
+      "permission": "read",
+      "createdAt": "2019-08-24T14:15:22Z",
+      "updatedAt": "2019-08-24T14:15:22Z",
+      "deletedAt": "2019-08-24T14:15:22Z"
+    }
+  ],
+  "pagination": {
+    "offset": 0,
+    "limit": 25
   }
 }`

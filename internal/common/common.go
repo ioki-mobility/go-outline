@@ -12,6 +12,10 @@ func HdrValueAuthorization(key string) string {
 	return "Bearer " + key
 }
 
-func GetCollectionEndpoint() string {
+func CollectionsGetEndpoint() string {
 	return "collections.info"
+}
+
+func CollectionsListEndpoint() string {
+	return "collections.list"
 }
