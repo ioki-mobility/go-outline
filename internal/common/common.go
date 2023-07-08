@@ -7,3 +7,11 @@ const (
 	HdrKeyAccept        string = "Accept"
 	HdrValueAccept      string = "application/json"
 )
+
+func HdrValueAuthorization(key string) string {
+	return "Bearer " + key
+}
+
+func GetCollectionEndpoint() string {
+	return "collections.info"
+}

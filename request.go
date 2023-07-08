@@ -72,6 +72,9 @@ func IsTemporary(err error) bool {
 	return errors.As(err, &e) && e.Temporary()
 }
 
+// temporary is supposed to be implemented by [error]s that want to indicate their temporary nature to the user. The
+// user can then use [outline.IsTemporary] to check this. Reference from standard library:
+// https://cs.opensource.google/go/go/+/refs/tags/go1.20.5:src/net/net.go;l=507
 type temporary interface {
 	Temporary() bool
 }
