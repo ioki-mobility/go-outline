@@ -36,5 +36,5 @@ func (cl *Client) Documents() *DocumentsClient { return nil }
 
 // Collections creates client for operating on collections.
 func (cl *Client) Collections() *CollectionsClient {
-	return &CollectionsClient{sl: cl.base.New()}
+	return newCollectionsClient(cl.base)
 }

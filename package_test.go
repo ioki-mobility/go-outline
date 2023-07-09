@@ -156,7 +156,6 @@ func TestClientCollectionsList(t *testing.T) {
 	collectionsListFnCalled := atomic.Uint32{}
 	err := cl.Collections().List().Do(context.Background(), func(c *outline.Collection, err error) (bool, error) {
 		collectionsListFnCalled.Add(1)
-		t.Log(c)
 		return true, nil
 	})
 	require.NoError(t, err)

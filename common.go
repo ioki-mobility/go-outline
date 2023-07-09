@@ -78,3 +78,17 @@ func IsTemporary(err error) bool {
 type temporary interface {
 	Temporary() bool
 }
+
+// pagination represents pagination logic related metadata usually part of responses containing list of items.
+type pagination struct {
+	Limit    int    `json:"limit"`
+	Offset   int    `json:"offset"`
+	NextPath string `json:"nextPath"`
+}
+
+// paginationQueryParams contains valid query paramters for pagination logic.
+// Reference: https://www.getoutline.com/developers#section/Pagination
+type paginationQueryParams struct {
+	Limit  int `url:"limit,omitempty"`
+	Offset int `url:"offset,omitempty"`
+}

@@ -13,28 +13,34 @@ type CollectionsClient struct {
 	sl *sling.Sling
 }
 
+func newCollectionsClient(sl *sling.Sling) *CollectionsClient {
+	return &CollectionsClient{sl: sl}
+}
+
 func (cl *CollectionsClient) Get(id CollectionID) *CollectionsGetClient {
-	data := struct {
-		ID CollectionID `json:"id"`
-	}{ID: id}
-
-	copy := cl.sl.New()
-	copy.BodyJSON(&data).Post(common.CollectionsGetEndpoint())
-
-	return &CollectionsGetClient{sl: copy}
+	return newCollectionsGetClient(cl.sl, id)
 }
 
 func (cl *CollectionsClient) List() *CollectionsListClient {
-	copy := cl.sl.New()
-	copy.Post(common.CollectionsListEndpoint())
-
-	return &CollectionsListClient{sl: copy}
+	return newCollectionListClient(cl.sl)
 }
 
 type CollectionsGetClient struct {
 	sl *sling.Sling
 }
 
+func newCollectionsGetClient(sl *sling.Sling, id CollectionID) *CollectionsGetClient {
+	data := struct {
+		ID CollectionID `json:"id"`
+	}{ID: id}
+
+	copy := sl.New()
+	copy.Post(common.CollectionsGetEndpoint()).BodyJSON(&data)
+
+	return &CollectionsGetClient{sl: copy}
+}
+
+// Do makes the actual request for fetching said collection info.
 func (cl *CollectionsGetClient) Do(ctx context.Context) (*Collection, error) {
 	success := &struct {
 		Data *Collection `json:"data"`
@@ -55,6 +61,13 @@ type CollectionsListClient struct {
 	sl *sling.Sling
 }
 
+func newCollectionListClient(sl *sling.Sling) *CollectionsListClient {
+	copy := sl.New()
+	copy.Post(common.CollectionsListEndpoint())
+
+	return &CollectionsListClient{sl: copy}
+}
+
 // CollectionsListFn is the type of function called by [CollectionsListClient.Do] for every new collecion it finds.
 type CollectionsListFn func(*Collection, error) (bool, error)
 
@@ -70,6 +83,7 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 
 	params := &paginationQueryParams{}
 	for {
+		// Create a fresh copy of original request for every page then set query parameters accordingly.
 		copy := cl.sl.New().QueryStruct(params)
 
 		// Make the request and see if there is an error/bad response. If there is one then give fn the error ask for
@@ -105,18 +119,4 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 		}
 		params.Offset += len(success.Data)
 	}
-}
-
-// pagination represents pagination logic related metadata usually part of responses containing list of items.
-type pagination struct {
-	Limit    int    `json:"limit"`
-	Offset   int    `json:"offset"`
-	NextPath string `json:"nextPath"`
-}
-
-// paginationQueryParams contains valid query paramters for pagination logic.
-// Reference: https://www.getoutline.com/developers#section/Pagination
-type paginationQueryParams struct {
-	Limit  int `url:"limit,omitempty"`
-	Offset int `url:"offset,omitempty"`
 }
