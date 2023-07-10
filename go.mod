@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/dghubble/sling v1.4.1
-	github.com/rsjethani/secret/v2 v2.3.0
 	github.com/stretchr/testify v1.8.4
 )
 

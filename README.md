@@ -6,23 +6,27 @@
 # Usage
 
 ## Client
-Getting a single document by its id:
 ```golang
-cl := outline.New()
-doc, err := cl.Documents().Get().ByID("document id").Do(context.Background())
+// Create top level client.
+cl := outline.New("https://baseurl/api",&http.Client{},"api key")
+
+
+// Fetch information about a collection:
+col,err := cl.Collections().Get("collection id").Do(context.Background())
 if err != nil {
 	panic(err)
 }
-fmt.Println(doc)
-```
+fmt.Println(col)
 
-Get all documents for a collection:
-```golang
-cl := outline.New()
-cl.Documents().GetAll().Collection("collection id").Do(context.Background(), func(d *outline.Document, err error) bool {
-		fmt.Println(d)
-		return true
-	})
+
+// Fetch information about all collections.
+err := cl.Collections().List().Do(context.Background(), func(c *outline.Collection, err error) (bool, error) {
+	fmt.Println(c)
+	return true, nil
+})
+if err != nil {
+	panic(err)
+}
 ```
 
 
