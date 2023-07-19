@@ -25,6 +25,10 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 	return newCollectionListClient(cl.sl)
 }
 
+func (cl *CollectionsClient) Create(name CollectionName) *CollectionsCreateClient {
+	return newCollectionsCreateClient(cl.sl, name)
+}
+
 type CollectionsGetClient struct {
 	sl *sling.Sling
 }
@@ -119,4 +123,36 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 		}
 		params.Offset += len(success.Data)
 	}
+}
+
+type CollectionsCreateClient struct {
+	sl *sling.Sling
+}
+
+func newCollectionsCreateClient(sl *sling.Sling, name CollectionName) *CollectionsCreateClient {
+	data := struct {
+		Name CollectionName `json:"name"`
+	}{Name: name}
+
+	copy := sl.New()
+	copy.Post(common.CollectionsCreateEndpoint()).BodyJSON(&data)
+
+	return &CollectionsCreateClient{sl: copy}
+}
+
+// Do make the actual request to create a collection.
+func (cl *CollectionsCreateClient) Do(ctx context.Context) (*Collection, error) {
+	success := &struct {
+		Data *Collection `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
 }
