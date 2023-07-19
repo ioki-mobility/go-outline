@@ -10,8 +10,8 @@ import (
 	"github.com/dghubble/sling"
 )
 
-// badResponse contains details of bad HTTP response returned by the server. For now we are treating all bad responses
-// as plain text just to be able to print/log. Later if need to examine it further then we can convert it into proper
+// badResponse contains details of bad HTTP response returned by the server. For now, we are treating all bad responses
+// as plain text just to be able to print/log. Later if you need to examine it further than we can convert it into proper
 // concrete type.
 type badResponse struct {
 	clientErr string // only filled in case of 4XX response
@@ -59,7 +59,7 @@ func (ae *apiError) Error() string {
 	return fmt.Sprintf("%+v", ae.br)
 }
 
-// Temporary returns true for 5XX errors. This satifies the temporary interface and enables usage with
+// Temporary returns true for 5XX errors. This satisfies the temporary interface and enables usage with
 // [outline.IsTemporary].
 func (ae *apiError) Temporary() bool {
 	return ae.br.status >= http.StatusInternalServerError && ae.br.status != http.StatusNotImplemented
