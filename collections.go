@@ -44,7 +44,7 @@ func newCollectionsGetClient(sl *sling.Sling, id CollectionID) *CollectionsGetCl
 	return &CollectionsGetClient{sl: copy}
 }
 
-// Do make the actual request for fetching said collection info.
+// Do makes the actual request for fetching said collection info.
 func (cl *CollectionsGetClient) Do(ctx context.Context) (*Collection, error) {
 	success := &struct {
 		Data *Collection `json:"data"`
@@ -75,7 +75,7 @@ func newCollectionListClient(sl *sling.Sling) *CollectionsListClient {
 // CollectionsListFn is the type of function called by [CollectionsListClient.Do] for every new collecion it finds.
 type CollectionsListFn func(*Collection, error) (bool, error)
 
-// Do make the actual request for listing all collections. If the request is successful then fn is called sequentially
+// Do makes the actual request for listing all collections. If the request is successful then fn is called sequentially
 // with every collection received. But if there is some error/bad response then fn is called with the error. If fn
 // returns false then the whole process is aborted otherwise the request is retried. NOTE: Policies if any returned are
 // ignored as of now. Later if we find them important then we can include them too.
@@ -91,7 +91,7 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 		copy := cl.sl.New().QueryStruct(params)
 
 		// Make the request and see if there is an error/bad response. If there is one then give fn the error ask for
-		// its intention. If fn still wants to continue the abort further processing in current iteration and
+		// its intention. If fn still wants to continue then we abort further processing in current iteration and
 		// basically retry the same request again.
 		br, err := request(ctx, copy, success)
 		if err != nil {
@@ -115,7 +115,7 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 			}
 		}
 
-		// If there are more than one item in current list then there could be more items remaining to be fetched. In
+		// If there is more than one item in current list then there could be more items remaining to be fetched. In
 		// that case we adjust offset for next request. If there are no items or just a single item in the list that
 		// means there are no more items to be fetched, and we are done.
 		if len(success.Data) <= 1 {
