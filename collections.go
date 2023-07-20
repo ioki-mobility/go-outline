@@ -25,7 +25,7 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 	return newCollectionListClient(cl.sl)
 }
 
-func (cl *CollectionsClient) Create(name CollectionName) *CollectionsCreateClient {
+func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 	return newCollectionsCreateClient(cl.sl, name)
 }
 
@@ -129,9 +129,9 @@ type CollectionsCreateClient struct {
 	sl *sling.Sling
 }
 
-func newCollectionsCreateClient(sl *sling.Sling, name CollectionName) *CollectionsCreateClient {
+func newCollectionsCreateClient(sl *sling.Sling, name string) *CollectionsCreateClient {
 	data := struct {
-		Name CollectionName `json:"name"`
+		Name string `json:"name"`
 	}{Name: name}
 
 	copy := sl.New()
