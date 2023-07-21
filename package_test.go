@@ -162,6 +162,41 @@ func TestClientCollectionsList(t *testing.T) {
 	assert.Equal(t, uint32(3), collectionsListFnCalled.Load())
 }
 
+func TestDocumentsClientCreate(t *testing.T) {
+	testResponse := exampleDocumentsCreateResponse_1documents
+
+	// Prepare HTTP client with mocked transport.
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(testBaseURL, common.DocumentsCreateEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(t, r, fmt.Sprintf(`{"collectionId":"%s", "title":"%s", "text":"%s", "publish":%t}`, "collection id", "🎉 Welcome to Acme Inc", "Some text", true))
+
+		return &http.Response{
+			Request:       r,
+			ContentLength: -1,
+			StatusCode:    http.StatusOK,
+			Body:          io.NopCloser(strings.NewReader(testResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testBaseURL, hc, testApiKey)
+	got, err := cl.Documents().Create("collection id", "🎉 Welcome to Acme Inc", "Some text", true).Do(context.Background())
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := &struct {
+		Data outline.Document `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
+	assert.Equal(t, &expected.Data, got)
+}
+
 func testAssertHeaders(t *testing.T, headers http.Header) {
 	t.Helper()
 	assert.Equal(t, headers.Get(common.HdrKeyAccept), common.HdrValueAccept)
@@ -262,4 +297,29 @@ const exampleCollectionsListResponse_1collection string = `
     "offset": 0,
     "limit": 25
   }
+}`
+
+const exampleDocumentsCreateResponse_1documents string = `{
+	"data": {
+		"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
+		"collectionId": "collection id",
+		"parentDocumentId": "ce8a7254-3ff2-448e-a302-0033b010f00b",
+		"title": "🎉 Welcome to Acme Inc",
+		"fullWidth": true,
+		"emoji": "🎉",
+		"text": "Some text",
+		"urlId": "hDYep1TPAM",
+		"collaborators": [],
+		"pinned": true,
+		"template": true,
+		"templateId": "196100ac-4eec-4fb6-a7f7-86c8b584771d",
+		"revision": 0,
+		"createdAt": "2019-08-24T14:15:22Z",
+		"createdBy": {},
+		"updatedAt": "2019-08-24T14:15:22Z",
+		"updatedBy": {},
+		"publishedAt": "2019-08-24T14:15:22Z",
+		"archivedAt": "2019-08-24T14:15:22Z",
+		"deletedAt": "2019-08-24T14:15:22Z"
+	}
 }`
