@@ -19,3 +19,7 @@ func CollectionsGetEndpoint() string {
 func CollectionsListEndpoint() string {
 	return "collections.list"
 }
+
+func DocumentsCreateEndpoint() string {
+	return "documents.create"
+}
