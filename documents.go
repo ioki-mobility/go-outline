@@ -62,10 +62,8 @@ func (cl *DocumentsClientGetAll) Do(ctx context.Context, fn func(*Document, erro
 }
 
 // Create returns a client for creating a single document in the specified collection.
-// collectionID: The ID of the collection to which the document will be added.
-// title: The title of the document (optional, set to empty string to omit).
-// text: The content text of the document.
-// publish: A boolean indicating whether the document should be published.
+//
+// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
 func (cl *DocumentsClient) Create(collectionID CollectionID, title string, text string, publish bool, parentDocumentId ParentDocumentID, templateId TemplateID, template bool) *DocumentsClientCreate {
 	return newDocumentsClientCreate(cl.sl, collectionID, title, text, publish, parentDocumentId, templateId, template)
 }
@@ -76,15 +74,6 @@ type DocumentsClientCreate struct {
 }
 
 // newDocumentsClientCreate creates a new DocumentsClientCreate instance to create a single document in the specified collection.
-// sl: The Sling client used to make HTTP requests.
-// collectionID: The ID of the collection to which the document will be added.
-// title: The title of the document.
-// text: The content text of the document (optional, set to empty string to omit).
-// publish: A boolean indicating whether the document should be published (optional, set to false to omit).
-// parentDocumentId: The ID of the parent document if the document is being created as a child (optional, set to empty string to omit).
-// templateId: The ID of the template to use for creating the document (optional, set to empty string to omit).
-// template: A boolean indicating whether the document is a template (optional, set to false to omit).
-// https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
 func newDocumentsClientCreate(sl *sling.Sling, collectionID CollectionID, title string, text string, publish bool, parentDocumentId ParentDocumentID, templateId TemplateID, template bool) *DocumentsClientCreate {
 	data := struct {
 		CollectionID     CollectionID     `json:"collectionId"`
@@ -109,7 +98,7 @@ func newDocumentsClientCreate(sl *sling.Sling, collectionID CollectionID, title 
 	return &DocumentsClientCreate{sl: copy}
 }
 
-// Do creates a document with the specified title and content.
+// Do makes the actual request to create a document.
 func (cl *DocumentsClientCreate) Do(ctx context.Context) (*Document, error) {
 	success := &struct {
 		Data *Document `json:"data"`
