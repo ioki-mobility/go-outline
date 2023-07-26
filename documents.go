@@ -61,45 +61,59 @@ func (cl *DocumentsClientGetAll) Do(ctx context.Context, fn func(*Document, erro
 	return nil
 }
 
+// documentsCreateParams represents the Outline Documents.create parameters
+type documentsCreateParams struct {
+	CollectionID     CollectionID     `json:"collectionId"`
+	ParentDocumentId ParentDocumentID `json:"parentDocumentId,omitempty"`
+	Publish          bool             `json:"publish,omitempty"`
+	Template         bool             `json:"template,omitempty"`
+	TemplateID       TemplateID       `json:"templateId,omitempty"`
+	Text             string           `json:"text,omitempty"`
+	Title            string           `json:"title"`
+}
+
+// DocumentsCreateClient is a client for creating a single document.
+type DocumentsCreateClient struct {
+	sl     *sling.Sling
+	params documentsCreateParams
+}
+
 // Create returns a client for creating a single document in the specified collection.
-//
 // API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
-func (cl *DocumentsClient) Create(collectionID CollectionID, title string, text string, publish bool, parentDocumentId ParentDocumentID, templateId TemplateID, template bool) *DocumentsClientCreate {
-	return newDocumentsClientCreate(cl.sl, collectionID, title, text, publish, parentDocumentId, templateId, template)
+func (cl *DocumentsClient) Create(title string, collectionId CollectionID) *DocumentsCreateClient {
+	return &DocumentsCreateClient{sl: cl.sl.New(), params: documentsCreateParams{Title: title, CollectionID: collectionId}}
 }
 
-// DocumentsClientCreate is a client for creating a single document.
-type DocumentsClientCreate struct {
-	sl *sling.Sling
+func (cl *DocumentsCreateClient) Publish(publish bool) *DocumentsCreateClient {
+	cl.params.Publish = publish
+	return cl
 }
 
-// newDocumentsClientCreate creates a new DocumentsClientCreate instance to create a single document in the specified collection.
-func newDocumentsClientCreate(sl *sling.Sling, collectionID CollectionID, title string, text string, publish bool, parentDocumentId ParentDocumentID, templateId TemplateID, template bool) *DocumentsClientCreate {
-	data := struct {
-		CollectionID     CollectionID     `json:"collectionId"`
-		Title            string           `json:"title"`
-		Publish          bool             `json:"publish,omitempty"`
-		Text             string           `json:"text,omitempty"`
-		ParentDocumentId ParentDocumentID `json:"parentDocumentId,omitempty"`
-		TemplateID       TemplateID       `json:"templateId,omitempty"`
-		Template         bool             `json:"template,omitempty"`
-	}{
-		CollectionID:     collectionID,
-		Title:            title,
-		Publish:          publish,
-		Text:             text,
-		ParentDocumentId: parentDocumentId,
-		TemplateID:       templateId,
-		Template:         template,
-	}
+func (cl *DocumentsCreateClient) Text(text string) *DocumentsCreateClient {
+	cl.params.Text = text
+	return cl
+}
 
-	copy := sl.New()
-	copy.Post(common.DocumentsCreateEndpoint()).BodyJSON(&data)
-	return &DocumentsClientCreate{sl: copy}
+func (cl *DocumentsCreateClient) ParentDocumentID(id ParentDocumentID) *DocumentsCreateClient {
+	cl.params.ParentDocumentId = id
+	return cl
+}
+
+func (cl *DocumentsCreateClient) TemplateID(id TemplateID) *DocumentsCreateClient {
+	cl.params.TemplateID = id
+	return cl
+}
+
+func (cl *DocumentsCreateClient) Template(template bool) *DocumentsCreateClient {
+	cl.params.Template = template
+	return cl
 }
 
 // Do makes the actual request to create a document.
-func (cl *DocumentsClientCreate) Do(ctx context.Context) (*Document, error) {
+func (cl *DocumentsCreateClient) Do(ctx context.Context) (*Document, error) {
+	params := cl.params
+	cl.sl.Post(common.DocumentsCreateEndpoint()).BodyJSON(&params)
+
 	success := &struct {
 		Data *Document `json:"data"`
 	}{}
