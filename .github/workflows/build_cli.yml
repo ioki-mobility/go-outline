@@ -1,0 +1,27 @@
+name: Build CLI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  buildCliAndPublish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.19'
+      - name: Checkout code
+        uses: actions/checkout@v3
+      - name: Build cli
+        run: |
+          GOOS=linux GOARCH=amd64 go build -o clis/outcli-linux ./cli
+          GOOS=darwin GOARCH=amd64 go build -o clis/outcli-macos-x86 ./cli
+          GOOS=darwin GOARCH=arm64 go build -o clis/outcli-macos-silicon ./cli
+      - uses: actions/upload-artifact@v3
+        with:
+          name: outline-clis
+          path: clis/
