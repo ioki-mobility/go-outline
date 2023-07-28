@@ -6,9 +6,6 @@ on:
     branches:
       - main
 
-permissions:
-  contents: read
-
 jobs:
   # Reference: https://github.com/golangci/golangci-lint-action
   golangci-lint:
@@ -26,7 +23,6 @@ jobs:
           version: v1.53.3
 
   go-test:
-    needs: [golangci-lint]
     name: testing
     strategy:
       matrix:
