@@ -10,7 +10,7 @@ func (cl *DocumentsClient) Get() *DocumentsClientGet {
 	return nil
 }
 
-// GetAll returns a client for retriving multiple documents at once.
+// GetAll returns a client for retrieving multiple documents at once.
 func (cl *DocumentsClient) GetAll() *DocumentsClientGetAll {
 	return nil
 }
@@ -23,7 +23,7 @@ func (cl *DocumentsClientGet) ByID(id DocumentID) *DocumentsClientGet {
 	return nil
 }
 
-// GetByID configures that document be retrieved by its share id.
+// ByShareID configures that document be retrieved by its share id.
 func (cl *DocumentsClientGet) ByShareID(id DocumentShareID) *DocumentsClientGet {
 	return nil
 }
@@ -32,7 +32,7 @@ func (cl *DocumentsClientGet) ByShareID(id DocumentShareID) *DocumentsClientGet 
 func (cl *DocumentsClientGet) Do(ctx context.Context) (*Document, error) { return nil, nil }
 
 // DocumentsClientGetAll can be used to retrieve more than one document. Use available configuration options to select
-// the documents you want to retrive then finall call [DocumentsClientGetAll.Do].
+// the documents you want to retrieve then finally call [DocumentsClientGetAll.Do].
 type DocumentsClientGetAll struct{}
 
 // Collection selects documents belonging to the collection identified by id.
