@@ -25,6 +25,10 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 	return newCollectionListClient(cl.sl)
 }
 
+func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
+	return newCollectionsCreateClient(cl.sl, name)
+}
+
 type CollectionsGetClient struct {
 	sl *sling.Sling
 }
@@ -87,7 +91,7 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 		copy := cl.sl.New().QueryStruct(params)
 
 		// Make the request and see if there is an error/bad response. If there is one then give fn the error ask for
-		// its intention. If fn still wants to continue the we abort further processing in current iteration and
+		// its intention. If fn still wants to continue then we abort further processing in current iteration and
 		// basically retry the same request again.
 		br, err := request(ctx, copy, success)
 		if err != nil {
@@ -104,19 +108,51 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 		}
 
 		// If we are here then it means there was no error/bad response while fetching current page
-		// so lets iterate over page items.
+		// so let's iterate over page items.
 		for _, col := range success.Data {
 			if ok, e := fn(col, nil); !ok {
 				return e
 			}
 		}
 
-		// If there are more than one items in current list then there could be more items remaining to be fetched. In
+		// If there is more than one item in current list then there could be more items remaining to be fetched. In
 		// that case we adjust offset for next request. If there are no items or just a single item in the list that
-		// means there are no more items to be fetched and we are done.
+		// means there are no more items to be fetched, and we are done.
 		if len(success.Data) <= 1 {
 			return nil
 		}
 		params.Offset += len(success.Data)
 	}
+}
+
+type CollectionsCreateClient struct {
+	sl *sling.Sling
+}
+
+func newCollectionsCreateClient(sl *sling.Sling, name string) *CollectionsCreateClient {
+	data := struct {
+		Name string `json:"name"`
+	}{Name: name}
+
+	copy := sl.New()
+	copy.Post(common.CollectionsCreateEndpoint()).BodyJSON(&data)
+
+	return &CollectionsCreateClient{sl: copy}
+}
+
+// Do make the actual request to create a collection.
+func (cl *CollectionsCreateClient) Do(ctx context.Context) (*Collection, error) {
+	success := &struct {
+		Data *Collection `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
 }

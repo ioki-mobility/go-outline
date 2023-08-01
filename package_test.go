@@ -162,6 +162,41 @@ func TestClientCollectionsList(t *testing.T) {
 	assert.Equal(t, uint32(3), collectionsListFnCalled.Load())
 }
 
+func TestClientCollectionsCreate(t *testing.T) {
+	testResponse := exampleCollectionsGetResponse
+
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(testBaseURL, common.CollectionsCreateEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(t, r, fmt.Sprintf(`{"name":"%s"}`, "new collection"))
+
+		return &http.Response{
+			Request:       r,
+			StatusCode:    http.StatusOK,
+			ContentLength: -1,
+			Body:          io.NopCloser(strings.NewReader(exampleCollectionsGetResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testBaseURL, hc, testApiKey)
+	got, err := cl.Collections().Create("new collection").Do(context.Background())
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := &struct {
+		Data outline.Collection `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
+	assert.Equal(t, &expected.Data, got)
+}
+
+
 func TestDocumentsClientCreate(t *testing.T) {
 	testResponse := exampleDocumentsCreateResponse_1documents
 
@@ -196,8 +231,9 @@ func TestDocumentsClientCreate(t *testing.T) {
 	}{}
 	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
 	assert.Equal(t, &expected.Data, got)
-}
-
+}  
+  
+  
 func testAssertHeaders(t *testing.T, headers http.Header) {
 	t.Helper()
 	assert.Equal(t, headers.Get(common.HdrKeyAccept), common.HdrValueAccept)

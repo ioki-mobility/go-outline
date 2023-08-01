@@ -20,6 +20,10 @@ func CollectionsListEndpoint() string {
 	return "collections.list"
 }
 
+func CollectionsCreateEndpoint() string {
+	return "collections.create"
+}
+
 func DocumentsCreateEndpoint() string {
 	return "documents.create"
 }
