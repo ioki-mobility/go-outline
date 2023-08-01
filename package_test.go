@@ -174,7 +174,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 		assert.Equal(t, u, r.URL.String())
 
 		testAssertHeaders(t, r.Header)
-		testAssertBody(t, r, fmt.Sprintf(`{"name":"%s"}`, "new collection"))
+		testAssertBody(t, r, fmt.Sprintf(`{"name":"%s", "permission":"%s", "description":"%s"}`, "new collection", "read", "desc"))
 
 		return &http.Response{
 			Request:       r,
@@ -185,7 +185,11 @@ func TestClientCollectionsCreate(t *testing.T) {
 	}}
 
 	cl := outline.New(testBaseURL, hc, testApiKey)
-	got, err := cl.Collections().Create("new collection").Do(context.Background())
+	got, err := cl.Collections().
+		Create("new collection").
+		Permission(outline.PermissionRead).
+		Description("desc").
+		Do(context.Background())
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.
