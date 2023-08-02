@@ -31,10 +31,12 @@ func New(baseURL string, hc *http.Client, apiKey string) *Client {
 	return &Client{base: sl}
 }
 
-// Documents creates client for operating on documents.
-func (cl *Client) Documents() *DocumentsClient { return nil }
+// Documents creates a client for operating on documents.
+func (cl *Client) Documents() *DocumentsClient {
+	return newDocumentsClient(cl.base)
+}
 
-// Collections creates client for operating on collections.
+// Collections creates a client for operating on collections.
 func (cl *Client) Collections() *CollectionsClient {
 	return newCollectionsClient(cl.base)
 }
