@@ -63,13 +63,13 @@ func (cl *DocumentsClientGetAll) Do(ctx context.Context, fn func(*Document, erro
 
 // documentsCreateParams represents the Outline Documents.create parameters
 type documentsCreateParams struct {
-	CollectionID     CollectionID     `json:"collectionId"`
-	ParentDocumentId ParentDocumentID `json:"parentDocumentId,omitempty"`
-	Publish          bool             `json:"publish,omitempty"`
-	Template         bool             `json:"template,omitempty"`
-	TemplateID       TemplateID       `json:"templateId,omitempty"`
-	Text             string           `json:"text,omitempty"`
-	Title            string           `json:"title"`
+	CollectionID     CollectionID `json:"collectionId"`
+	ParentDocumentId DocumentID   `json:"parentDocumentId,omitempty"`
+	Publish          bool         `json:"publish,omitempty"`
+	Template         bool         `json:"template,omitempty"`
+	TemplateID       TemplateID   `json:"templateId,omitempty"`
+	Text             string       `json:"text,omitempty"`
+	Title            string       `json:"title"`
 }
 
 // DocumentsCreateClient is a client for creating a single document.
@@ -100,7 +100,7 @@ func (cl *DocumentsCreateClient) Text(text string) *DocumentsCreateClient {
 	return cl
 }
 
-func (cl *DocumentsCreateClient) ParentDocumentID(id ParentDocumentID) *DocumentsCreateClient {
+func (cl *DocumentsCreateClient) ParentDocumentID(id DocumentID) *DocumentsCreateClient {
 	cl.params.ParentDocumentId = id
 	return cl
 }
