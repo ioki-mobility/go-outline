@@ -129,11 +129,11 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 
 // collectionsCreateParams represents the Outline Collections.create parameters
 type collectionsCreateParams struct {
-	Name        string     `json:"name"`
-	Description string     `json:"description,omitempty"`
-	Permission  Permission `json:"permission,omitempty"`
-	Color       string     `json:"color,omitempty"`
-	Private     bool       `json:"private,omitempty"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Permission  string `json:"permission,omitempty"`
+	Color       string `json:"color,omitempty"`
+	Private     bool   `json:"private,omitempty"`
 }
 
 type CollectionsCreateClient struct {
@@ -152,8 +152,13 @@ func (cl *CollectionsCreateClient) Description(desc string) *CollectionsCreateCl
 	return cl
 }
 
-func (cl *CollectionsCreateClient) Permission(perm Permission) *CollectionsCreateClient {
-	cl.params.Permission = perm
+func (cl *CollectionsCreateClient) PermissionRead() *CollectionsCreateClient {
+	cl.params.Permission = "read"
+	return cl
+}
+
+func (cl *CollectionsCreateClient) PermissionReadWrite() *CollectionsCreateClient {
+	cl.params.Permission = "read_write"
 	return cl
 }
 

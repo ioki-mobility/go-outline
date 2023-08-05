@@ -7,12 +7,6 @@ type (
 	DocumentShareID string
 	DocumentUrlID   string
 	CollectionID    string
-	Permission      string
-)
-
-const (
-	PermissionRead      Permission = "read"
-	PermissionReadWrite Permission = "read_write"
 )
 
 // Document represents an outline document.

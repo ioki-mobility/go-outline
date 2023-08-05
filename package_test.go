@@ -187,7 +187,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 	cl := outline.New(testBaseURL, hc, testApiKey)
 	got, err := cl.Collections().
 		Create("new collection").
-		Permission(outline.PermissionRead).
+		PermissionRead().
 		Description("desc").
 		Do(context.Background())
 	require.NoError(t, err)
