@@ -24,7 +24,7 @@ func Run() error {
 }
 
 func rootCmd() *cobra.Command {
-	var rootCmd = &cobra.Command{Use: "outline"}
+	rootCmd := &cobra.Command{Use: "outline"}
 
 	var apiKeyFlag string
 	var baseUrlFlag string
@@ -45,7 +45,7 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 	fetchSubCmd := collectionCmdFetch(rootCmd)
 	collectionCmd.AddCommand(fetchSubCmd)
 
-	createSubCmd := collectionCmdCrate(rootCmd)
+	createSubCmd := collectionCmdCreate(rootCmd)
 	collectionCmd.AddCommand(createSubCmd)
 
 	return collectionCmd
@@ -73,7 +73,7 @@ func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 					return fmt.Errorf("can't get collection with id '%s': %w", colId, err)
 				}
 
-				b, err := json.Marshal(&col)
+				b, err := json.Marshal(col)
 				if err != nil {
 					return fmt.Errorf("failed marshalling collection with id '%s: %w", colId, err)
 				}
@@ -84,7 +84,7 @@ func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 	}
 }
 
-func collectionCmdCrate(rootCmd *cobra.Command) *cobra.Command {
+func collectionCmdCreate(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "create",
 		Short: "Creates a collection",
@@ -107,7 +107,7 @@ func collectionCmdCrate(rootCmd *cobra.Command) *cobra.Command {
 				return fmt.Errorf("can't create collection with name '%s': %w", name, err)
 			}
 
-			b, err := json.Marshal(&col)
+			b, err := json.Marshal(col)
 			if err != nil {
 				return fmt.Errorf("failed marshalling collection with name '%s: %w", name, err)
 			}
