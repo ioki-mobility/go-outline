@@ -28,7 +28,7 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 // Create returns a client for creating a collection.
 // API reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.create/post
 func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
-	return newCollectionsCreateClient(cl.sl, collectionsCreateParams{Name: name})
+	return newCollectionsCreateClient(cl.sl, name)
 }
 
 type CollectionsGetClient struct {
@@ -141,8 +141,9 @@ type CollectionsCreateClient struct {
 	params collectionsCreateParams
 }
 
-func newCollectionsCreateClient(sl *sling.Sling, params collectionsCreateParams) *CollectionsCreateClient {
+func newCollectionsCreateClient(sl *sling.Sling, name string) *CollectionsCreateClient {
 	copy := sl.New()
+	params := collectionsCreateParams{Name: name}
 	return &CollectionsCreateClient{sl: copy, params: params}
 }
 
