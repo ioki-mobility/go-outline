@@ -25,6 +25,8 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 	return newCollectionListClient(cl.sl)
 }
 
+// Create returns a client for creating a collection.
+// API reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.create/post
 func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 	return newCollectionsCreateClient(cl.sl, name)
 }
@@ -125,23 +127,55 @@ func (cl *CollectionsListClient) Do(ctx context.Context, fn CollectionsListFn) e
 	}
 }
 
+// collectionsCreateParams represents the Outline Collections.create parameters
+type collectionsCreateParams struct {
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Permission  string `json:"permission,omitempty"`
+	Color       string `json:"color,omitempty"`
+	Private     bool   `json:"private,omitempty"`
+}
+
 type CollectionsCreateClient struct {
-	sl *sling.Sling
+	sl     *sling.Sling
+	params collectionsCreateParams
 }
 
 func newCollectionsCreateClient(sl *sling.Sling, name string) *CollectionsCreateClient {
-	data := struct {
-		Name string `json:"name"`
-	}{Name: name}
-
 	copy := sl.New()
-	copy.Post(common.CollectionsCreateEndpoint()).BodyJSON(&data)
+	params := collectionsCreateParams{Name: name}
+	return &CollectionsCreateClient{sl: copy, params: params}
+}
 
-	return &CollectionsCreateClient{sl: copy}
+func (cl *CollectionsCreateClient) Description(desc string) *CollectionsCreateClient {
+	cl.params.Description = desc
+	return cl
+}
+
+func (cl *CollectionsCreateClient) PermissionRead() *CollectionsCreateClient {
+	cl.params.Permission = "read"
+	return cl
+}
+
+func (cl *CollectionsCreateClient) PermissionReadWrite() *CollectionsCreateClient {
+	cl.params.Permission = "read_write"
+	return cl
+}
+
+func (cl *CollectionsCreateClient) Color(color string) *CollectionsCreateClient {
+	cl.params.Color = color
+	return cl
+}
+
+func (cl *CollectionsCreateClient) Private(private bool) *CollectionsCreateClient {
+	cl.params.Private = private
+	return cl
 }
 
 // Do make the actual request to create a collection.
 func (cl *CollectionsCreateClient) Do(ctx context.Context) (*Collection, error) {
+	cl.sl.Post(common.CollectionsCreateEndpoint()).BodyJSON(&cl.params)
+
 	success := &struct {
 		Data *Collection `json:"data"`
 	}{}
