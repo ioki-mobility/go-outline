@@ -10,12 +10,12 @@ type (
 	TemplateID      string
 )
 
-// CollectionDocument represents summary of a document (and its children) that is part of a collection.
-type CollectionDocument struct {
+// DocumentSummary represents summary of a document (and its children) that is part of a collection.
+type DocumentSummary struct {
 	ID       DocumentID
 	Title    string
 	URL      string
-	Children []CollectionDocument
+	Children []DocumentSummary
 }
 
 // Document represents an outline document.

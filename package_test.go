@@ -132,7 +132,7 @@ func TestClientCollectionsStructure(t *testing.T) {
 
 	// Manually unmarshal test response and see if we get same object via the API.
 	expected := struct {
-		Data []outline.CollectionDocument `json:"data"`
+		Data []outline.DocumentSummary `json:"data"`
 	}{}
 	require.NoError(t, json.Unmarshal([]byte(testResponse), &expected))
 	assert.Equal(t, expected.Data, got)

@@ -42,11 +42,11 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 	}
 
+	docsSubCmd := collectionCmdDocs(rootCmd)
+	collectionCmd.AddCommand(docsSubCmd)
+
 	infoSubCmd := collectionCmdInfo(rootCmd)
 	collectionCmd.AddCommand(infoSubCmd)
-
-	fetchSubCmd := collectionCmdFetch(rootCmd)
-	collectionCmd.AddCommand(fetchSubCmd)
 
 	createSubCmd := collectionCmdCreate(rootCmd)
 	collectionCmd.AddCommand(createSubCmd)
@@ -54,11 +54,11 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 	return collectionCmd
 }
 
-func collectionCmdInfo(rootCmd *cobra.Command) *cobra.Command {
+func collectionCmdDocs(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
-		Use:   "info",
-		Short: "Get collection structure",
-		Long:  "Get information about collection, essentially shows what documents are part of it.",
+		Use:   "docs",
+		Short: "Get document list",
+		Long:  "Get a summary of collection's associated documents (and children)",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
@@ -69,6 +69,7 @@ func collectionCmdInfo(rootCmd *cobra.Command) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
 			}
+
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
 			for _, colId := range args {
 				st, err := client.Collections().Structure(outline.CollectionID(colId)).Do(context.Background())
@@ -87,11 +88,11 @@ func collectionCmdInfo(rootCmd *cobra.Command) *cobra.Command {
 	}
 }
 
-func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
+func collectionCmdInfo(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
-		Use:   "fetch",
-		Short: "Fetch collection details",
-		Long:  "Fetch collection details for given ID and prints as json to stdout",
+		Use:   "info",
+		Short: "Get collection info",
+		Long:  "Get information about the collection",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
@@ -102,6 +103,7 @@ func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
 			}
+
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
 			for _, colId := range args {
 				col, err := client.Collections().Get(outline.CollectionID(colId)).Do(context.Background())
@@ -109,7 +111,7 @@ func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 					return fmt.Errorf("can't get collection with id '%s': %w", colId, err)
 				}
 
-				b, err := json.Marshal(col)
+				b, err := json.MarshalIndent(col, "", "  ")
 				if err != nil {
 					return fmt.Errorf("failed marshalling collection with id '%s: %w", colId, err)
 				}
@@ -135,6 +137,7 @@ func collectionCmdCreate(rootCmd *cobra.Command) *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
 			}
+
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
 
 			name := args[0]
