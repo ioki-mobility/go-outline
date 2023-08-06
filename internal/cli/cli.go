@@ -24,7 +24,7 @@ func Run() error {
 }
 
 func rootCmd() *cobra.Command {
-	var rootCmd = &cobra.Command{Use: "outline"}
+	rootCmd := &cobra.Command{Use: "outline"}
 
 	var apiKeyFlag string
 	var baseUrlFlag string
@@ -42,8 +42,11 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 	}
 
-	fetchCommand := collectionCmdFetch(rootCmd)
-	collectionCmd.AddCommand(fetchCommand)
+	fetchSubCmd := collectionCmdFetch(rootCmd)
+	collectionCmd.AddCommand(fetchSubCmd)
+
+	createSubCmd := collectionCmdCreate(rootCmd)
+	collectionCmd.AddCommand(createSubCmd)
 
 	return collectionCmd
 }
@@ -51,7 +54,7 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "fetch",
-		Short: "Fetch collection details for given ID",
+		Short: "Fetch collection details",
 		Long:  "Fetch collection details for given ID and prints as json to stdout",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -64,21 +67,52 @@ func collectionCmdFetch(rootCmd *cobra.Command) *cobra.Command {
 				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
 			}
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
-			for _, collectionId := range args {
-				collection, err := client.
-					Collections().
-					Get(outline.CollectionID(collectionId)).
-					Do(context.Background())
+			for _, colId := range args {
+				col, err := client.Collections().Get(outline.CollectionID(colId)).Do(context.Background())
 				if err != nil {
-					return fmt.Errorf("can't get collection with id '%s': %w", collectionId, err)
+					return fmt.Errorf("can't get collection with id '%s': %w", colId, err)
 				}
 
-				b, err := json.Marshal(&collection)
+				b, err := json.Marshal(col)
 				if err != nil {
-					return fmt.Errorf("failed marshalling collection with id '%s: %w", collectionId, err)
+					return fmt.Errorf("failed marshalling collection with id '%s: %w", colId, err)
 				}
 				fmt.Println(string(b))
 			}
+			return nil
+		},
+	}
+}
+
+func collectionCmdCreate(rootCmd *cobra.Command) *cobra.Command {
+	return &cobra.Command{
+		Use:   "create",
+		Short: "Creates a collection",
+		Long:  "Creates a collection with the given name and prints the result as json to stdout",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
+			if err != nil {
+				return fmt.Errorf("required flag '%s' not set: %w", flagNameBaseUrl, err)
+			}
+			apiKey, err := rootCmd.Flags().GetString(flagNameApiKey)
+			if err != nil {
+				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
+			}
+			client := outline.New(baseUrl, &http.Client{}, apiKey)
+
+			name := args[0]
+			col, err := client.Collections().Create(name).Do(context.Background())
+			if err != nil {
+				return fmt.Errorf("can't create collection with name '%s': %w", name, err)
+			}
+
+			b, err := json.Marshal(col)
+			if err != nil {
+				return fmt.Errorf("failed marshalling collection with name '%s: %w", name, err)
+			}
+			fmt.Println(string(b))
+
 			return nil
 		},
 	}
