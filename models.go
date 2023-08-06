@@ -10,6 +10,14 @@ type (
 	TemplateID      string
 )
 
+// CollectionDocument represents summary of a document (and its children) that is part of a collection.
+type CollectionDocument struct {
+	ID       DocumentID
+	Title    string
+	URL      string
+	Children []CollectionDocument
+}
+
 // Document represents an outline document.
 type Document struct {
 	ID               DocumentID    `json:"id"`
