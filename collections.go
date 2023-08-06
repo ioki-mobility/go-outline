@@ -51,11 +51,12 @@ func newCollectionsStructureClient(sl *sling.Sling, id CollectionID) *Collection
 	return &CollectionsStructureClient{sl: copy}
 }
 
-// Do makes the actual request for fetching the collection's document structure. The structure is essentially a summary
-// of all associated documents.
-func (cl *CollectionsStructureClient) Do(ctx context.Context) ([]DocumentSummary, error) {
+type DocumentStructure []DocumentSummary
+
+// Do makes the actual request for getting the collection's document structure.
+func (cl *CollectionsStructureClient) Do(ctx context.Context) (DocumentStructure, error) {
 	success := &struct {
-		Data []DocumentSummary `json:"data"`
+		Data DocumentStructure `json:"data"`
 	}{}
 
 	br, err := request(ctx, cl.sl, success)

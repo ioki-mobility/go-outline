@@ -57,8 +57,8 @@ func collectionCmd(rootCmd *cobra.Command) *cobra.Command {
 func collectionCmdDocs(rootCmd *cobra.Command) *cobra.Command {
 	return &cobra.Command{
 		Use:   "docs",
-		Short: "Get document list",
-		Long:  "Get a summary of collection's associated documents (and children)",
+		Short: "Get document structure",
+		Long:  "Get a summary of associated documents (and children)",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)

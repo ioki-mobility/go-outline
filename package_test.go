@@ -79,32 +79,8 @@ func TestClientCollectionsStructure_failed(t *testing.T) {
 	}
 }
 
-const exampleCollectionsStructureResponse string = `
-{
-  "data": [
-	{
-		"id": "doc1",
-		"title": "Doc 1",
-		"url": "https://doc1.url"
-	},
-	{
-		"id": "doc2",
-		"title": "Doc 2",
-		"url": "https://doc2.url",
-		"children": [
-			{
-				"id": "doc2-1",
-				"title": "Doc 2-1",
-				"url": "https://doc2-1.url"
-			}
-		]
-	}
-  ]
-}
-`
-
 func TestClientCollectionsStructure(t *testing.T) {
-	testResponse := exampleCollectionsStructureResponse
+	testResponse := exampleCollectionsDocumentStructureResponse
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -132,7 +108,7 @@ func TestClientCollectionsStructure(t *testing.T) {
 
 	// Manually unmarshal test response and see if we get same object via the API.
 	expected := struct {
-		Data []outline.DocumentSummary `json:"data"`
+		Data outline.DocumentStructure `json:"data"`
 	}{}
 	require.NoError(t, json.Unmarshal([]byte(testResponse), &expected))
 	assert.Equal(t, expected.Data, got)
@@ -475,3 +451,27 @@ const exampleDocumentsCreateResponse_1documents string = `{
 		"deletedAt": "2019-08-24T14:15:22Z"
 	}
 }`
+
+const exampleCollectionsDocumentStructureResponse string = `
+{
+  "data": [
+	{
+		"id": "doc1",
+		"title": "Doc 1",
+		"url": "https://doc1.url"
+	},
+	{
+		"id": "doc2",
+		"title": "Doc 2",
+		"url": "https://doc2.url",
+		"children": [
+			{
+				"id": "doc2-1",
+				"title": "Doc 2-1",
+				"url": "https://doc2-1.url"
+			}
+		]
+	}
+  ]
+}
+`
