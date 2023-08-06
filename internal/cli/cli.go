@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	flagNameBaseUrl = "baseUrl"
-	flagNameApiKey  = "apiKey"
+	flagServerURL = "server"
+	flagApiKey    = "key"
 )
 
 func Run() error {
@@ -26,10 +26,10 @@ func Run() error {
 func rootCmd() *cobra.Command {
 	rootCmd := &cobra.Command{Use: "outline"}
 
-	var apiKeyFlag string
-	var baseUrlFlag string
-	rootCmd.PersistentFlags().StringVar(&baseUrlFlag, flagNameBaseUrl, "", "The base url to the outline API instance (should include /api/ as suffix)")
-	rootCmd.PersistentFlags().StringVar(&apiKeyFlag, flagNameApiKey, "", "The outline apiKey")
+	var apiKey string
+	var serverURL string
+	rootCmd.PersistentFlags().StringVar(&serverURL, flagServerURL, "", "The outline API server url")
+	rootCmd.PersistentFlags().StringVar(&apiKey, flagApiKey, "", "The outline api key")
 
 	return rootCmd
 }
@@ -61,13 +61,13 @@ func collectionCmdDocs(rootCmd *cobra.Command) *cobra.Command {
 		Long:  "Get a summary of associated documents (and children)",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
+			baseUrl, err := rootCmd.Flags().GetString(flagServerURL)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameBaseUrl, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagServerURL, err)
 			}
-			apiKey, err := rootCmd.Flags().GetString(flagNameApiKey)
+			apiKey, err := rootCmd.Flags().GetString(flagApiKey)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagApiKey, err)
 			}
 
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
@@ -95,13 +95,13 @@ func collectionCmdInfo(rootCmd *cobra.Command) *cobra.Command {
 		Long:  "Get information about the collection",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
+			baseUrl, err := rootCmd.Flags().GetString(flagServerURL)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameBaseUrl, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagServerURL, err)
 			}
-			apiKey, err := rootCmd.Flags().GetString(flagNameApiKey)
+			apiKey, err := rootCmd.Flags().GetString(flagApiKey)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagApiKey, err)
 			}
 
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
@@ -129,13 +129,13 @@ func collectionCmdCreate(rootCmd *cobra.Command) *cobra.Command {
 		Long:  "Creates a collection with the given name and prints the result as json to stdout",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			baseUrl, err := rootCmd.Flags().GetString(flagNameBaseUrl)
+			baseUrl, err := rootCmd.Flags().GetString(flagServerURL)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameBaseUrl, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagServerURL, err)
 			}
-			apiKey, err := rootCmd.Flags().GetString(flagNameApiKey)
+			apiKey, err := rootCmd.Flags().GetString(flagApiKey)
 			if err != nil {
-				return fmt.Errorf("required flag '%s' not set: %w", flagNameApiKey, err)
+				return fmt.Errorf("required flag '%s' not set: %w", flagApiKey, err)
 			}
 
 			client := outline.New(baseUrl, &http.Client{}, apiKey)

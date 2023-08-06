@@ -12,7 +12,7 @@ Go client and cli for [outline](https://www.getoutline.com/).
 ### Create a client
 
 ```go
-cl := outline.New("https://base.url/api", &http.Client{}, "api key")
+cl := outline.New("https://server.url", &http.Client{}, "api key")
 ```
 
 > **Note**: You can create a new API key in your outline **account settings**.
@@ -89,11 +89,9 @@ go build -o outline ./cli
 
 ### Required flags
 
-Any command requires the flags `baseUrl` and `apiKey`.
-You can simply add them with `--baseUrl https://base.Url/api` 
-and `--apiKey sup3rS3cre7Ap1K3Y`.
-
-> **Note**: The `baseUrl` is the URL to your outline instance, followed by `/api`.
+Any command requires the flags `server` and `key`.
+You can simply add them with `--server https://server.url` 
+and `--key sup3rS3cre7Ap1K3Y`.
 
 ### Collections
 
