@@ -1,27 +1,38 @@
-# Go client and cli for [outline][def]
+[![Checks](https://github.com/ioki-mobility/go-outline/actions/workflows/checks.yml/badge.svg)](https://github.com/ioki-mobility/go-outline/actions/workflows/checks.yml)
+[![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ioki-mobility/go-outline/blob/main/LICENSE)
 
-[def]: https://www.getoutline.com/
+# go-outline
 
+Go client and cli for [outline](https://www.getoutline.com/).
 
 # Usage
 
 ## Client
-```golang
-// Create top level client.
-cl := outline.New("https://baseurl/api",&http.Client{},"api key")
 
+### Create a client
 
-// Fetch information about a collection:
-col,err := cl.Collections().Get("collection id").Do(context.Background())
+```go
+cl := outline.New("https://base.url/api", &http.Client{}, "api key")
+```
+
+> **Note**: You can create a new API key in your outline **account settings**.
+
+### Get a collection
+
+```go
+col, err := cl.Collections().Get("collection id").Do(context.Background())
 if err != nil {
 	panic(err)
 }
 fmt.Println(col)
+```
 
 
-// Fetch information about all collections.
-err := cl.Collections().List().Do(context.Background(), func(c *outline.Collection, err error) (bool, error) {
-	fmt.Println(c)
+### Get all collections
+
+```go
+err := cl.Collections().List().Do(context.Background(), func(col *outline.Collection, err error) (bool, error) {
+	fmt.Println(col)
 	return true, nil
 })
 if err != nil {
@@ -29,6 +40,78 @@ if err != nil {
 }
 ```
 
+### Create a collection
+
+```go
+col, err := cl.Collections().Create("collection name").Do(context.Background()) 
+if err != nil {
+	panic(err)
+}
+fmt.Println(col)
+```
+
+There are also **optional** functions for the `CollectionsCreateClient` available:
+```go
+colCreateClient := cl.Collections().Create("collection name")
+colCreateClient.
+	Description("desc"). 
+	PermissionRead(). // or PermissionReadWrite()
+	Color("#c0c0c0").
+	Private(true).
+	Do(context.Background())
+```
+
+### Document Create
+
+```go
+doc := cl.Documents().Create("Document name", "collection id").Do(context.Background())
+```
+
+There re also **optional** functions for the `DocumentsCreateClient` available:
+```go
+docCreateClient := cl.Documents().Create("Document name")
+docCreateClient.
+	Publish(true). 
+	Text("text").
+	ParentDocumentID(DocumentId("parent document id")).
+	TemplateID(TemplateId("templateId")).
+	Template(false).
+	Do(context.Background())
+```
 
 ## CLI
-TBA
+
+### Build the CLI
+
+```
+go build -o outline ./cli
+```
+
+### Required flags
+
+Any command requires the flags `baseUrl` and `apiKey`.
+You can simply add them with `--baseUrl https://base.Url/api` 
+and `--apiKey sup3rS3cre7Ap1K3Y`.
+
+> **Note**: The `baseUrl` is the URL to your outline instance, followed by `/api`.
+
+### Collections
+
+The basic command to work with collections is:
+```
+outline collections
+```
+
+#### Collections fetch
+
+To fetch a collection and display it in a json string use:
+```
+outline collections fetch [COLLECTION_ID] [flags]
+```
+
+#### Collections create
+
+To create a collection and display the created collection as a json string use:
+```
+outline collections create [COLLECTION_NAME] [flags]
+```
