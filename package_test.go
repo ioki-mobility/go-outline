@@ -290,7 +290,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 }
 
 func TestDocumentsClientCreate(t *testing.T) {
-	testResponse := exampleDocumentsCreateResponse_1documents
+	testResponse := exampleDocumentsResponse_1documents
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -315,6 +315,55 @@ func TestDocumentsClientCreate(t *testing.T) {
 	cl := outline.New(testServerURL, hc, testApiKey)
 	var collectionId outline.CollectionID = "collection id"
 	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", collectionId).Text("Some text").Publish(true).Do(context.Background())
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := &struct {
+		Data outline.Document `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
+	assert.Equal(t, &expected.Data, got)
+}
+
+func TestDocumentsClientUpdate(t *testing.T) {
+	testResponse := exampleDocumentsResponse
+
+	// Prepare HTTP client with mocked transport.
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(testBaseURL, common.DocumentsUpdateEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(
+			t,
+			r,
+			fmt.Sprintf(
+				`{"id":"%s", "title":"%s", "text":"%s", "publish":%t}`,
+				"497f6eca-6276-4993-bfeb-53cbbbba6f08",
+				"🎉 Welcome to Acme Inc",
+				"Updated text!",
+				true,
+			),
+		)
+
+		return &http.Response{
+			Request:       r,
+			ContentLength: -1,
+			StatusCode:    http.StatusOK,
+			Body:          io.NopCloser(strings.NewReader(testResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testBaseURL, hc, testApiKey)
+
+	got, err := cl.Documents().Update("497f6eca-6276-4993-bfeb-53cbbbba6f08").
+		Title("🎉 Welcome to Acme Inc").Text("Updated text!").Publish(true).
+		Do(context.Background())
+
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.
@@ -427,7 +476,7 @@ const exampleCollectionsListResponse_1collection string = `
   }
 }`
 
-const exampleDocumentsCreateResponse_1documents string = `{
+const exampleDocumentsResponse string = `{
 	"data": {
 		"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
 		"collectionId": "collection id",

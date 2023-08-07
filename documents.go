@@ -133,3 +133,75 @@ func (cl *DocumentsCreateClient) Do(ctx context.Context) (*Document, error) {
 
 	return success.Data, nil
 }
+
+// documentsUpdateParams represents the Outline Documents.update parameters
+type documentsUpdateParams struct {
+	Id      DocumentID `json:"id"`
+	Title   string     `json:"title,omitempty"`
+	Text    string     `json:"text,omitempty"`
+	Append  bool       `json:"append,omitempty"`
+	Publish bool       `json:"publish,omitempty"`
+	Done    bool       `json:"done,omitempty"`
+}
+
+// DocumentsUpdateClient is a client for updating a single document.
+type DocumentsUpdateClient struct {
+	sl     *sling.Sling
+	params documentsUpdateParams
+}
+
+func newDocumentsUpdateClient(sl *sling.Sling, id DocumentID) *DocumentsUpdateClient {
+	copy := sl.New()
+	params := documentsUpdateParams{Id: id}
+	return &DocumentsUpdateClient{sl: copy, params: params}
+}
+
+// Update returns a client for updating a single document in the specified collection.
+// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.update/post
+func (cl *DocumentsClient) Update(id DocumentID) *DocumentsUpdateClient {
+	return newDocumentsUpdateClient(cl.sl, id)
+}
+
+func (cl *DocumentsUpdateClient) Title(title string) *DocumentsUpdateClient {
+	cl.params.Title = title
+	return cl
+}
+
+func (cl *DocumentsUpdateClient) Text(text string) *DocumentsUpdateClient {
+	cl.params.Text = text
+	return cl
+}
+
+func (cl *DocumentsUpdateClient) Publish(publish bool) *DocumentsUpdateClient {
+	cl.params.Publish = publish
+	return cl
+}
+
+func (cl *DocumentsUpdateClient) Append(append bool) *DocumentsUpdateClient {
+	cl.params.Append = append
+	return cl
+}
+
+func (cl *DocumentsUpdateClient) Done(done bool) *DocumentsUpdateClient {
+	cl.params.Done = done
+	return cl
+}
+
+// Do makes the actual request to update a document.
+func (cl *DocumentsUpdateClient) Do(ctx context.Context) (*Document, error) {
+	cl.sl.Post(common.DocumentsUpdateEndpoint()).BodyJSON(&cl.params)
+
+	success := &struct {
+		Data *Document `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
+}
