@@ -290,7 +290,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 }
 
 func TestDocumentsClientCreate(t *testing.T) {
-	testResponse := exampleDocumentsResponse_1documents
+	testResponse := exampleDocumentsResponse
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -302,7 +302,17 @@ func TestDocumentsClientCreate(t *testing.T) {
 		assert.Equal(t, u, r.URL.String())
 
 		testAssertHeaders(t, r.Header)
-		testAssertBody(t, r, fmt.Sprintf(`{"collectionId":"%s", "title":"%s", "text":"%s", "publish":%t}`, "collection id", "🎉 Welcome to Acme Inc", "Some text", true))
+		testAssertBody(
+			t,
+			r,
+			fmt.Sprintf(
+				`{"collectionId":"%s", "title":"%s", "text":"%s", "publish":%t}`,
+				"collection id",
+				"🎉 Welcome to Acme Inc",
+				"Some text",
+				true,
+			),
+		)
 
 		return &http.Response{
 			Request:       r,
@@ -333,7 +343,7 @@ func TestDocumentsClientUpdate(t *testing.T) {
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
 		// Assert request method and URL.
 		assert.Equal(t, http.MethodPost, r.Method)
-		u, err := url.JoinPath(testBaseURL, common.DocumentsUpdateEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.DocumentsUpdateEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u, r.URL.String())
 
@@ -358,7 +368,7 @@ func TestDocumentsClientUpdate(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 
 	got, err := cl.Documents().Update("497f6eca-6276-4993-bfeb-53cbbbba6f08").
 		Title("🎉 Welcome to Acme Inc").Text("Updated text!").Publish(true).

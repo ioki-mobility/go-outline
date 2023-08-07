@@ -78,16 +78,16 @@ type DocumentsCreateClient struct {
 	params documentsCreateParams
 }
 
-func newDocumentsCreateClient(sl *sling.Sling, params documentsCreateParams) *DocumentsCreateClient {
+func newDocumentsCreateClient(sl *sling.Sling, title string, collectionId CollectionID) *DocumentsCreateClient {
 	copy := sl.New()
-
+	params := documentsCreateParams{Title: title, CollectionID: collectionId}
 	return &DocumentsCreateClient{sl: copy, params: params}
 }
 
 // Create returns a client for creating a single document in the specified collection.
 // API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
 func (cl *DocumentsClient) Create(title string, collectionId CollectionID) *DocumentsCreateClient {
-	return newDocumentsCreateClient(cl.sl, documentsCreateParams{Title: title, CollectionID: collectionId})
+	return newDocumentsCreateClient(cl.sl, title, collectionId)
 }
 
 func (cl *DocumentsCreateClient) Publish(publish bool) *DocumentsCreateClient {
