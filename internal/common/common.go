@@ -41,3 +41,7 @@ func DocumentsCreateEndpoint() string {
 func DocumentsUpdateEndpoint() string {
 	return "documents.update"
 }
+
+func AttachmentsCreateEndpoint() string {
+	return "attachments.create"
+}
