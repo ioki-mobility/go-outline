@@ -71,7 +71,7 @@ func TestClientCollectionsStructure_failed(t *testing.T) {
 			hc := &http.Client{}
 			hc.Transport = test.rt
 			cl := outline.New(testBaseURL, hc, testApiKey)
-			col, err := cl.Collections().Structure("collection id").Do(context.Background())
+			col, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
 			assert.Nil(t, col)
 			require.NotNil(t, err)
 			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
@@ -103,7 +103,7 @@ func TestClientCollectionsStructure(t *testing.T) {
 	}}
 
 	cl := outline.New(testBaseURL, hc, testApiKey)
-	got, err := cl.Collections().Structure("collection id").Do(context.Background())
+	got, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.

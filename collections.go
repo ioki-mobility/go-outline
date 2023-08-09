@@ -17,9 +17,10 @@ func newCollectionsClient(sl *sling.Sling) *CollectionsClient {
 	return &CollectionsClient{sl: sl}
 }
 
-// Structure gives access to id's document structure.
-func (cl *CollectionsClient) Structure(id CollectionID) *CollectionsStructureClient {
-	return newCollectionsStructureClient(cl.sl, id)
+// DocumentStructure gives access to id's document structure.
+// API Reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.documents/post
+func (cl *CollectionsClient) DocumentStructure(id CollectionID) *CollectionsDocumentStructureClient {
+	return newCollectionsDocumentStructureClient(cl.sl, id)
 }
 
 func (cl *CollectionsClient) Get(id CollectionID) *CollectionsGetClient {
@@ -36,11 +37,11 @@ func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 	return newCollectionsCreateClient(cl.sl, name)
 }
 
-type CollectionsStructureClient struct {
+type CollectionsDocumentStructureClient struct {
 	sl *sling.Sling
 }
 
-func newCollectionsStructureClient(sl *sling.Sling, id CollectionID) *CollectionsStructureClient {
+func newCollectionsDocumentStructureClient(sl *sling.Sling, id CollectionID) *CollectionsDocumentStructureClient {
 	data := struct {
 		ID CollectionID `json:"id"`
 	}{ID: id}
@@ -48,13 +49,13 @@ func newCollectionsStructureClient(sl *sling.Sling, id CollectionID) *Collection
 	copy := sl.New()
 	copy.Post(common.CollectionsStructureEndpoint()).BodyJSON(&data)
 
-	return &CollectionsStructureClient{sl: copy}
+	return &CollectionsDocumentStructureClient{sl: copy}
 }
 
 type DocumentStructure []DocumentSummary
 
 // Do makes the actual request for getting the collection's document structure.
-func (cl *CollectionsStructureClient) Do(ctx context.Context) (DocumentStructure, error) {
+func (cl *CollectionsDocumentStructureClient) Do(ctx context.Context) (DocumentStructure, error) {
 	success := &struct {
 		Data DocumentStructure `json:"data"`
 	}{}

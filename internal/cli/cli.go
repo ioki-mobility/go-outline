@@ -72,7 +72,7 @@ func collectionCmdDocs(rootCmd *cobra.Command) *cobra.Command {
 
 			client := outline.New(baseUrl, &http.Client{}, apiKey)
 			for _, colId := range args {
-				st, err := client.Collections().Structure(outline.CollectionID(colId)).Do(context.Background())
+				st, err := client.Collections().DocumentStructure(outline.CollectionID(colId)).Do(context.Background())
 				if err != nil {
 					return fmt.Errorf("can't get collection with id '%s': %w", colId, err)
 				}
@@ -146,7 +146,7 @@ func collectionCmdCreate(rootCmd *cobra.Command) *cobra.Command {
 				return fmt.Errorf("can't create collection with name '%s': %w", name, err)
 			}
 
-			b, err := json.Marshal(col)
+			b, err := json.MarshalIndent(col, "", "  ")
 			if err != nil {
 				return fmt.Errorf("failed marshalling collection with name '%s: %w", name, err)
 			}
