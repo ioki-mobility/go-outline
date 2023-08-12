@@ -17,6 +17,12 @@ func newCollectionsClient(sl *sling.Sling) *CollectionsClient {
 	return &CollectionsClient{sl: sl}
 }
 
+// DocumentStructure gives access to id's document structure.
+// API Reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.documents/post
+func (cl *CollectionsClient) DocumentStructure(id CollectionID) *CollectionsDocumentStructureClient {
+	return newCollectionsDocumentStructureClient(cl.sl, id)
+}
+
 func (cl *CollectionsClient) Get(id CollectionID) *CollectionsGetClient {
 	return newCollectionsGetClient(cl.sl, id)
 }
@@ -29,6 +35,40 @@ func (cl *CollectionsClient) List() *CollectionsListClient {
 // API reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.create/post
 func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 	return newCollectionsCreateClient(cl.sl, name)
+}
+
+type CollectionsDocumentStructureClient struct {
+	sl *sling.Sling
+}
+
+func newCollectionsDocumentStructureClient(sl *sling.Sling, id CollectionID) *CollectionsDocumentStructureClient {
+	data := struct {
+		ID CollectionID `json:"id"`
+	}{ID: id}
+
+	copy := sl.New()
+	copy.Post(common.CollectionsStructureEndpoint()).BodyJSON(&data)
+
+	return &CollectionsDocumentStructureClient{sl: copy}
+}
+
+type DocumentStructure []DocumentSummary
+
+// Do makes the actual request for getting the collection's document structure.
+func (cl *CollectionsDocumentStructureClient) Do(ctx context.Context) (DocumentStructure, error) {
+	success := &struct {
+		Data DocumentStructure `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
 }
 
 type CollectionsGetClient struct {

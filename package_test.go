@@ -25,6 +25,95 @@ const (
 	testBaseURL string = "https://localhost.123"
 )
 
+func TestClientCollectionsStructure_failed(t *testing.T) {
+	tests := map[string]struct {
+		isTemporary bool
+		rt          http.RoundTripper
+	}{
+		"HTTP request failed": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return nil, &net.DNSError{}
+				},
+			},
+		},
+		"server side error": {
+			isTemporary: true,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						StatusCode:    http.StatusServiceUnavailable,
+						ContentLength: -1,
+						Body:          io.NopCloser(strings.NewReader("service unavailable")),
+					}, nil
+				},
+			},
+		},
+		"client side error": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("unauthorized key")),
+					}, nil
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			hc := &http.Client{}
+			hc.Transport = test.rt
+			cl := outline.New(testBaseURL, hc, testApiKey)
+			col, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
+			assert.Nil(t, col)
+			require.NotNil(t, err)
+			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
+		})
+	}
+}
+
+func TestClientCollectionsStructure(t *testing.T) {
+	testResponse := exampleCollectionsDocumentStructureResponse
+
+	// Prepare HTTP client with mocked transport.
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(testBaseURL, common.CollectionsStructureEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(t, r, fmt.Sprintf(`{"id":"%s"}`, "collection id"))
+
+		return &http.Response{
+			Request:       r,
+			ContentLength: -1,
+			StatusCode:    http.StatusOK,
+			Body:          io.NopCloser(strings.NewReader(testResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testBaseURL, hc, testApiKey)
+	got, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := struct {
+		Data outline.DocumentStructure `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), &expected))
+	assert.Equal(t, expected.Data, got)
+}
+
 func TestClientCollectionsGet_failed(t *testing.T) {
 	tests := map[string]struct {
 		isTemporary bool
@@ -200,7 +289,6 @@ func TestClientCollectionsCreate(t *testing.T) {
 	assert.Equal(t, &expected.Data, got)
 }
 
-
 func TestDocumentsClientCreate(t *testing.T) {
 	testResponse := exampleDocumentsCreateResponse_1documents
 
@@ -235,9 +323,8 @@ func TestDocumentsClientCreate(t *testing.T) {
 	}{}
 	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
 	assert.Equal(t, &expected.Data, got)
-}  
-  
-  
+}
+
 func testAssertHeaders(t *testing.T, headers http.Header) {
 	t.Helper()
 	assert.Equal(t, headers.Get(common.HdrKeyAccept), common.HdrValueAccept)
@@ -364,3 +451,27 @@ const exampleDocumentsCreateResponse_1documents string = `{
 		"deletedAt": "2019-08-24T14:15:22Z"
 	}
 }`
+
+const exampleCollectionsDocumentStructureResponse string = `
+{
+  "data": [
+	{
+		"id": "doc1",
+		"title": "Doc 1",
+		"url": "https://doc1.url"
+	},
+	{
+		"id": "doc2",
+		"title": "Doc 2",
+		"url": "https://doc2.url",
+		"children": [
+			{
+				"id": "doc2-1",
+				"title": "Doc 2-1",
+				"url": "https://doc2-1.url"
+			}
+		]
+	}
+  ]
+}
+`
