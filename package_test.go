@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	testApiKey  string = "api key"
-	testBaseURL string = "https://localhost.123"
+	testApiKey    string = "api key"
+	testServerURL string = "https://localhost.123"
 )
 
 func TestClientCollectionsStructure_failed(t *testing.T) {
@@ -70,7 +70,7 @@ func TestClientCollectionsStructure_failed(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			hc := &http.Client{}
 			hc.Transport = test.rt
-			cl := outline.New(testBaseURL, hc, testApiKey)
+			cl := outline.New(testServerURL, hc, testApiKey)
 			col, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
 			assert.Nil(t, col)
 			require.NotNil(t, err)
@@ -87,7 +87,7 @@ func TestClientCollectionsStructure(t *testing.T) {
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
 		// Assert request method and URL.
 		assert.Equal(t, http.MethodPost, r.Method)
-		u, err := url.JoinPath(testBaseURL, common.CollectionsStructureEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.CollectionsStructureEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u, r.URL.String())
 
@@ -102,7 +102,7 @@ func TestClientCollectionsStructure(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 	got, err := cl.Collections().DocumentStructure("collection id").Do(context.Background())
 	require.NoError(t, err)
 
@@ -159,7 +159,7 @@ func TestClientCollectionsGet_failed(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			hc := &http.Client{}
 			hc.Transport = test.rt
-			cl := outline.New(testBaseURL, hc, testApiKey)
+			cl := outline.New(testServerURL, hc, testApiKey)
 			col, err := cl.Collections().Get("collection id").Do(context.Background())
 			assert.Nil(t, col)
 			require.NotNil(t, err)
@@ -176,7 +176,7 @@ func TestClientCollectionsGet(t *testing.T) {
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
 		// Assert request method and URL.
 		assert.Equal(t, http.MethodPost, r.Method)
-		u, err := url.JoinPath(testBaseURL, common.CollectionsGetEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.CollectionsGetEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u, r.URL.String())
 
@@ -191,7 +191,7 @@ func TestClientCollectionsGet(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 	got, err := cl.Collections().Get("collection id").Do(context.Background())
 	require.NoError(t, err)
 
@@ -214,7 +214,7 @@ func TestClientCollectionsList(t *testing.T) {
 
 		if requestCount.Load() == 1 {
 			// Assert URL when asking first page.
-			u, err := url.JoinPath(testBaseURL, common.CollectionsListEndpoint())
+			u, err := url.JoinPath(common.BaseURL(testServerURL), common.CollectionsListEndpoint())
 			require.NoError(t, err)
 			assert.Equal(t, u, r.URL.String())
 
@@ -228,7 +228,7 @@ func TestClientCollectionsList(t *testing.T) {
 
 		// Assert URL when asking second page (first page had 2 items).
 		// NOTE: There is some hard coding here but that is okay, no need to over-engineer as of now.
-		u, err := url.JoinPath(testBaseURL, common.CollectionsListEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.CollectionsListEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u+"?offset=2", r.URL.String())
 
@@ -240,7 +240,7 @@ func TestClientCollectionsList(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 
 	collectionsListFnCalled := atomic.Uint32{}
 	err := cl.Collections().List().Do(context.Background(), func(c *outline.Collection, err error) (bool, error) {
@@ -258,7 +258,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
 		// Assert request method and URL.
 		assert.Equal(t, http.MethodPost, r.Method)
-		u, err := url.JoinPath(testBaseURL, common.CollectionsCreateEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.CollectionsCreateEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u, r.URL.String())
 
@@ -273,7 +273,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 	got, err := cl.Collections().
 		Create("new collection").
 		PermissionRead().
@@ -297,7 +297,7 @@ func TestDocumentsClientCreate(t *testing.T) {
 	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
 		// Assert request method and URL.
 		assert.Equal(t, http.MethodPost, r.Method)
-		u, err := url.JoinPath(testBaseURL, common.DocumentsCreateEndpoint())
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.DocumentsCreateEndpoint())
 		require.NoError(t, err)
 		assert.Equal(t, u, r.URL.String())
 
@@ -312,7 +312,7 @@ func TestDocumentsClientCreate(t *testing.T) {
 		}, nil
 	}}
 
-	cl := outline.New(testBaseURL, hc, testApiKey)
+	cl := outline.New(testServerURL, hc, testApiKey)
 	var collectionId outline.CollectionID = "collection id"
 	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", collectionId).Text("Some text").Publish(true).Do(context.Background())
 	require.NoError(t, err)

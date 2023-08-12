@@ -2,7 +2,6 @@ package outline
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/dghubble/sling"
 	"github.com/ioki-mobility/go-outline/internal/common"
@@ -17,13 +16,9 @@ type Client struct {
 	base *sling.Sling
 }
 
-// New creates and returns a new per server client.
-func New(baseURL string, hc *http.Client, apiKey string) *Client {
-	if !strings.HasSuffix(baseURL, "/") {
-		baseURL = baseURL + "/"
-	}
-
-	sl := sling.New().Client(hc).Base(baseURL)
+// New creates and returns a new (per server) client.
+func New(serverURL string, hc *http.Client, apiKey string) *Client {
+	sl := sling.New().Client(hc).Base(common.BaseURL(serverURL))
 	sl.Set(common.HdrKeyAuthorization, common.HdrValueAuthorization(apiKey))
 	sl.Set(common.HdrKeyContentType, common.HdrValueContentType)
 	sl.Set(common.HdrKeyAccept, common.HdrValueAccept)

@@ -12,6 +12,10 @@ func HdrValueAuthorization(key string) string {
 	return "Bearer " + key
 }
 
+func BaseURL(server string) string {
+	return server + "/api/"
+}
+
 func CollectionsStructureEndpoint() string {
 	return "collections.documents"
 }
