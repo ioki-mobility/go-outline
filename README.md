@@ -9,7 +9,7 @@ Go client and cli for [outline](https://www.getoutline.com/).
 
 ## Installing the client:
 ```shell
-$ go get github.com/ioki-mobility/go-outline
+go get github.com/ioki-mobility/go-outline
 ```
 
 ## Installing the CLI:
