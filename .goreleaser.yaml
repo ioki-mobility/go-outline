@@ -1,0 +1,40 @@
+# Reference: https://github.com/cli/cli/blob/v2.32.1/.goreleaser.yml
+
+release:
+  name_template: "outline CLI {{.Version}}"
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: macos
+    goos: [darwin]
+    goarch: [amd64, arm64]
+    main: ./cli
+    binary: outcli
+    ldflags:
+      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{.Version}}
+
+  - id: linux
+    goos: [linux]
+    goarch: [amd64]
+    main: ./cli
+    binary: outcli
+    env:
+      - CGO_ENABLED=0
+    ldflags:
+      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{.Version}}
+
+archives:
+  - id: linux-archive
+    builds: [linux]
+    name_template: "outcli_{{ .Version }}_linux_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    wrap_in_directory: true
+
+  - id: macos-archive
+    builds: [macos]
+    name_template: "outcli_{{ .Version }}_macOS_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    wrap_in_directory: true
+    format: zip
+
