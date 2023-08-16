@@ -1,26 +1,37 @@
+# References:
+# - https://github.com/cli/cli/blob/v2.32.1/.github/workflows/deployment.yml
+# - https://github.com/goreleaser/goreleaser-action/tree/v4.4.0#usage
+
 name: Release
 
 permissions:
   contents: write
 
 on:
-  pull_request:
-  push:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        required: true
+        type: string
+      go_version:
+        default: "1.20"
+        type: string
 
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      -
-        name: Set up Go
+
+      - name: Set up Go
         uses: actions/setup-go@v4
-      -
-        name: Run GoReleaser
+        with:
+          go-version: ${{ inputs.go_version }}
+
+      - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
         with:
           args: release --clean
