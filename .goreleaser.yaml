@@ -3,6 +3,8 @@
 project_name: outcli
 
 release:
+  draft: true
+  replace_existing_draft: true
   name_template: "outline CLI {{.Tag}}"
 
 before:
