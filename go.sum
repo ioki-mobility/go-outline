@@ -9,8 +9,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
-github.com/rsjethani/sling v0.0.0-20230703014414-05b42d1f1a76 h1:QnCqiBAqFLAt+/eaJvLjBUw9RHSf6oFmmtg7ClIryWg=
-github.com/rsjethani/sling v0.0.0-20230703014414-05b42d1f1a76/go.mod h1:o0arCOz0HwfqYQJLrRtqunaWOn4X6jxE/6ORKRpVTD4=
+github.com/rsjethani/rsling v0.2.0 h1:a8OY4aCDN/FqnKgF9/FHdyoLB90frXcaXEREdg139u0=
+github.com/rsjethani/rsling v0.2.0/go.mod h1:vgWZR0je3w8oCWjV4C9KjwzkSMf8Wy0QWjvTY3ssJrE=
 github.com/russross/blackfriday/v2 v2.1.0/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/spf13/cobra v1.7.0 h1:hyqWnYt1ZQShIddO5kBpj3vu05/++x6tJ6dg8EC572I=
 github.com/spf13/cobra v1.7.0/go.mod h1:uLxZILRyS/50WlhOIKD7W6V5bgeIt+4sICxh6uRMrb0=

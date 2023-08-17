@@ -11,7 +11,7 @@ import (
 
 	"github.com/ioki-mobility/go-outline/internal/testutils"
 
-	"github.com/dghubble/sling"
+	"github.com/rsjethani/rsling"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -25,7 +25,7 @@ func Test_request_failed(t *testing.T) {
 		},
 	}
 
-	sl := sling.New().Client(client)
+	sl := rsling.New().Client(client)
 
 	ed, err := request(context.Background(), sl, nil)
 	assert.NotNil(t, err)
@@ -74,7 +74,7 @@ func Test_request_returns_bad_response(t *testing.T) {
 				},
 			}
 
-			sl := sling.New().Client(client).Get(test.expected.url)
+			sl := rsling.New().Client(client).Get(test.expected.url)
 			got, err := request(context.Background(), sl, nil)
 			assert.Nil(t, err)
 			assert.Equal(t, test.expected, *got)
@@ -108,7 +108,7 @@ func Test_request(t *testing.T) {
 	}
 	got := &testModel{}
 
-	sl := sling.New().Client(client).Get("https://some.url")
+	sl := rsling.New().Client(client).Get("https://some.url")
 	ed, err := request(context.Background(), sl, got)
 	assert.Nil(t, err)
 	assert.Nil(t, ed)

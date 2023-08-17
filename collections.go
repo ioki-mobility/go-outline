@@ -4,16 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dghubble/sling"
+	"github.com/rsjethani/rsling"
 	"github.com/ioki-mobility/go-outline/internal/common"
 )
 
 // CollectionsClient exposes CRUD operations around the collections resource.
 type CollectionsClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
-func newCollectionsClient(sl *sling.Sling) *CollectionsClient {
+func newCollectionsClient(sl *rsling.Sling) *CollectionsClient {
 	return &CollectionsClient{sl: sl}
 }
 
@@ -38,10 +38,10 @@ func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 }
 
 type CollectionsDocumentStructureClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
-func newCollectionsDocumentStructureClient(sl *sling.Sling, id CollectionID) *CollectionsDocumentStructureClient {
+func newCollectionsDocumentStructureClient(sl *rsling.Sling, id CollectionID) *CollectionsDocumentStructureClient {
 	data := struct {
 		ID CollectionID `json:"id"`
 	}{ID: id}
@@ -72,10 +72,10 @@ func (cl *CollectionsDocumentStructureClient) Do(ctx context.Context) (DocumentS
 }
 
 type CollectionsGetClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
-func newCollectionsGetClient(sl *sling.Sling, id CollectionID) *CollectionsGetClient {
+func newCollectionsGetClient(sl *rsling.Sling, id CollectionID) *CollectionsGetClient {
 	data := struct {
 		ID CollectionID `json:"id"`
 	}{ID: id}
@@ -104,10 +104,10 @@ func (cl *CollectionsGetClient) Do(ctx context.Context) (*Collection, error) {
 }
 
 type CollectionsListClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
-func newCollectionListClient(sl *sling.Sling) *CollectionsListClient {
+func newCollectionListClient(sl *rsling.Sling) *CollectionsListClient {
 	copy := sl.New()
 	copy.Post(common.CollectionsListEndpoint())
 
@@ -177,11 +177,11 @@ type collectionsCreateParams struct {
 }
 
 type CollectionsCreateClient struct {
-	sl     *sling.Sling
+	sl     *rsling.Sling
 	params collectionsCreateParams
 }
 
-func newCollectionsCreateClient(sl *sling.Sling, name string) *CollectionsCreateClient {
+func newCollectionsCreateClient(sl *rsling.Sling, name string) *CollectionsCreateClient {
 	copy := sl.New()
 	params := collectionsCreateParams{Name: name}
 	return &CollectionsCreateClient{sl: copy, params: params}
