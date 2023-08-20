@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dghubble/sling"
+	"github.com/rsjethani/rsling"
 	"github.com/ioki-mobility/go-outline/internal/common"
 )
 
 // DocumentsClient exposes CRUD operations around the documents resource.
 type DocumentsClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
 // newDocumentsClient creates a new instance of DocumentsClient.
-func newDocumentsClient(sl *sling.Sling) *DocumentsClient {
+func newDocumentsClient(sl *rsling.Sling) *DocumentsClient {
 	return &DocumentsClient{sl: sl}
 }
 
@@ -74,11 +74,11 @@ type documentsCreateParams struct {
 
 // DocumentsCreateClient is a client for creating a single document.
 type DocumentsCreateClient struct {
-	sl     *sling.Sling
+	sl     *rsling.Sling
 	params documentsCreateParams
 }
 
-func newDocumentsCreateClient(sl *sling.Sling, params documentsCreateParams) *DocumentsCreateClient {
+func newDocumentsCreateClient(sl *rsling.Sling, params documentsCreateParams) *DocumentsCreateClient {
 	copy := sl.New()
 
 	return &DocumentsCreateClient{sl: copy, params: params}

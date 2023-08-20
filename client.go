@@ -3,7 +3,7 @@ package outline
 import (
 	"net/http"
 
-	"github.com/dghubble/sling"
+	"github.com/rsjethani/rsling"
 	"github.com/ioki-mobility/go-outline/internal/common"
 )
 
@@ -13,12 +13,12 @@ import (
 type Client struct {
 	// base acts as the 'base' request on which various common properties like HTTP headers, server url etc. are
 	// configured. The resource level clients create their own customized request derived from this.
-	base *sling.Sling
+	base *rsling.Sling
 }
 
 // New creates and returns a new (per server) client.
 func New(serverURL string, hc *http.Client, apiKey string) *Client {
-	sl := sling.New().Client(hc).Base(common.BaseURL(serverURL))
+	sl := rsling.New().Client(hc).Base(common.BaseURL(serverURL))
 	sl.Set(common.HdrKeyAuthorization, common.HdrValueAuthorization(apiKey))
 	sl.Set(common.HdrKeyContentType, common.HdrValueContentType)
 	sl.Set(common.HdrKeyAccept, common.HdrValueAccept)

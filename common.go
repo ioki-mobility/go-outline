@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/dghubble/sling"
+	"github.com/rsjethani/rsling"
 )
 
 // badResponse contains details of bad HTTP response returned by the server. For now, we are treating all bad responses
@@ -24,9 +24,9 @@ type badResponse struct {
 // would contain decoded response. If HTTP request did not complete normally then an error is returned. If request did
 // complete but response was bad then badResponse would contain details. NOTE: Apart from adding failure decoder the
 // req is used as is hence the caller must pass fully prepared req.
-func request(ctx context.Context, req *sling.Sling, success any) (*badResponse, error) {
+func request(ctx context.Context, req *rsling.Sling, success any) (*badResponse, error) {
 	buf := &bytes.Buffer{}
-	resp, err := req.FailureDecoder(sling.ByteStreamer{}).ReceiveWithContext(ctx, success, buf)
+	resp, err := req.FailureDecoder(rsling.ByteStreamer{}).ReceiveWithContext(ctx, success, buf)
 	if err != nil {
 		return nil, err
 	}
