@@ -28,6 +28,18 @@ func (cl *DocumentsClient) GetAll() *DocumentsClientGetAll {
 	return nil
 }
 
+// Create returns a client for creating a single document in the specified collection.
+// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
+func (cl *DocumentsClient) Create(title string, collectionId CollectionID) *DocumentsCreateClient {
+	return newDocumentsCreateClient(cl.sl, title, collectionId)
+}
+
+// Update returns a client for updating a single document in the specified collection.
+// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.update/post
+func (cl *DocumentsClient) Update(id DocumentID) *DocumentsUpdateClient {
+	return newDocumentsUpdateClient(cl.sl, id)
+}
+
 // DocumentsClientGet gets a single document.
 type DocumentsClientGet struct{}
 
@@ -82,12 +94,6 @@ func newDocumentsCreateClient(sl *sling.Sling, title string, collectionId Collec
 	copy := sl.New()
 	params := documentsCreateParams{Title: title, CollectionID: collectionId}
 	return &DocumentsCreateClient{sl: copy, params: params}
-}
-
-// Create returns a client for creating a single document in the specified collection.
-// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
-func (cl *DocumentsClient) Create(title string, collectionId CollectionID) *DocumentsCreateClient {
-	return newDocumentsCreateClient(cl.sl, title, collectionId)
 }
 
 func (cl *DocumentsCreateClient) Publish(publish bool) *DocumentsCreateClient {
@@ -154,12 +160,6 @@ func newDocumentsUpdateClient(sl *sling.Sling, id DocumentID) *DocumentsUpdateCl
 	copy := sl.New()
 	params := documentsUpdateParams{Id: id}
 	return &DocumentsUpdateClient{sl: copy, params: params}
-}
-
-// Update returns a client for updating a single document in the specified collection.
-// API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.update/post
-func (cl *DocumentsClient) Update(id DocumentID) *DocumentsUpdateClient {
-	return newDocumentsUpdateClient(cl.sl, id)
 }
 
 func (cl *DocumentsUpdateClient) Title(title string) *DocumentsUpdateClient {
