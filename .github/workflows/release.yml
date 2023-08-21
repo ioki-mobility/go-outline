@@ -13,12 +13,9 @@ on:
       tag_name:
         required: true
         type: string
-      go_version:
-        default: "1.20"
-        type: string
 
 jobs:
-  goreleaser:
+  cli:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -29,7 +26,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: ${{ inputs.go_version }}
+          go-version: 1.20
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
