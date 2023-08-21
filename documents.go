@@ -4,17 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/dghubble/sling"
 	"github.com/ioki-mobility/go-outline/internal/common"
+	"github.com/rsjethani/rsling"
 )
 
 // DocumentsClient exposes CRUD operations around the documents resource.
 type DocumentsClient struct {
-	sl *sling.Sling
+	sl *rsling.Sling
 }
 
 // newDocumentsClient creates a new instance of DocumentsClient.
-func newDocumentsClient(sl *sling.Sling) *DocumentsClient {
+func newDocumentsClient(sl *rsling.Sling) *DocumentsClient {
 	return &DocumentsClient{sl: sl}
 }
 
@@ -86,13 +86,13 @@ type documentsCreateParams struct {
 
 // DocumentsCreateClient is a client for creating a single document.
 type DocumentsCreateClient struct {
-	sl     *sling.Sling
+	sl     *rsling.Sling
 	params documentsCreateParams
 }
 
-func newDocumentsCreateClient(sl *sling.Sling, title string, collectionId CollectionID) *DocumentsCreateClient {
+func newDocumentsCreateClient(sl *rsling.Sling, title string, id CollectionID) *DocumentsCreateClient {
 	copy := sl.New()
-	params := documentsCreateParams{Title: title, CollectionID: collectionId}
+	params := documentsCreateParams{Title: title, CollectionID: id}
 	return &DocumentsCreateClient{sl: copy, params: params}
 }
 
@@ -152,11 +152,11 @@ type documentsUpdateParams struct {
 
 // DocumentsUpdateClient is a client for updating a single document.
 type DocumentsUpdateClient struct {
-	sl     *sling.Sling
+	sl     *rsling.Sling
 	params documentsUpdateParams
 }
 
-func newDocumentsUpdateClient(sl *sling.Sling, id DocumentID) *DocumentsUpdateClient {
+func newDocumentsUpdateClient(sl *rsling.Sling, id DocumentID) *DocumentsUpdateClient {
 	copy := sl.New()
 	params := documentsUpdateParams{Id: id}
 	return &DocumentsUpdateClient{sl: copy, params: params}
