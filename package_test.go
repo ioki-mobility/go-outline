@@ -290,7 +290,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 }
 
 func TestDocumentsClientCreate(t *testing.T) {
-	testResponse := exampleDocumentsResponse
+	testResponse := exampleDocumentResponse
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -336,7 +336,7 @@ func TestDocumentsClientCreate(t *testing.T) {
 }
 
 func TestDocumentsClientUpdate(t *testing.T) {
-	testResponse := exampleDocumentsResponse
+	testResponse := exampleDocumentResponse
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -486,7 +486,7 @@ const exampleCollectionsListResponse_1collection string = `
   }
 }`
 
-const exampleDocumentsResponse string = `{
+const exampleDocumentResponse string = `{
 	"data": {
 		"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
 		"collectionId": "collection id",
