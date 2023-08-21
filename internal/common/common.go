@@ -1,5 +1,7 @@
 package common
 
+var Version string = "dev"
+
 const (
 	HdrKeyAuthorization string = "Authorization"
 	HdrKeyContentType   string = "Content-Type"

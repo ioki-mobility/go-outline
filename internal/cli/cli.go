@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ioki-mobility/go-outline"
+	"github.com/ioki-mobility/go-outline/internal/common"
 	"github.com/spf13/cobra"
 )
 
@@ -30,6 +31,14 @@ func parseCmd() *cobra.Command {
 	var cfg config
 	rootCmd.PersistentFlags().StringVar(&cfg.serverUrl, flagServerURL, "", "The outline API server url")
 	rootCmd.PersistentFlags().StringVar(&cfg.apiKey, flagApiKey, "", "The outline api key")
+
+	rootCmd.AddCommand(&cobra.Command{
+		Use: "version",
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println(common.Version)
+		},
+		Short: "Show app version",
+	})
 
 	collectionCmd := &cobra.Command{
 		Use:   "collection",
