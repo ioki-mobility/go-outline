@@ -13,7 +13,7 @@ go get github.com/ioki-mobility/go-outline
 ```
 
 ## Installing the CLI:
-- Download from [releases](https://github.com/ioki-mobility/go-outline/releases)
+- Download pre-built binaries from [releases](https://github.com/ioki-mobility/go-outline/releases) page for your platform
 - Install via go toolchain:
 ```shell
 go install github.com/ioki-mobility/go-outline/cli@latest
