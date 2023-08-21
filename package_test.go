@@ -384,6 +384,73 @@ func TestDocumentsClientUpdate(t *testing.T) {
 	assert.Equal(t, &expected.Data, got)
 }
 
+func TestDocumentsClientUpdate_failed(t *testing.T) {
+	tests := map[string]struct {
+		isTemporary bool
+		rt          http.RoundTripper
+	}{
+		"HTTP request failed": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return nil, &net.DNSError{}
+				},
+			},
+		},
+		"server side error": {
+			isTemporary: true,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						StatusCode:    http.StatusServiceUnavailable,
+						ContentLength: -1,
+						Body:          io.NopCloser(strings.NewReader("service unavailable")),
+					}, nil
+				},
+			},
+		},
+		"client side error": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("unauthorized key")),
+					}, nil
+				},
+			},
+		},
+		"resource not found": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("the document with the id doesn't exist")),
+					}, nil
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			hc := &http.Client{}
+			hc.Transport = test.rt
+			cl := outline.New(testServerURL, hc, testApiKey)
+			col, err := cl.Documents().Update("id").Do(context.Background())
+			assert.Nil(t, col)
+			require.NotNil(t, err)
+			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
+		})
+	}
+}
+
 func testAssertHeaders(t *testing.T, headers http.Header) {
 	t.Helper()
 	assert.Equal(t, headers.Get(common.HdrKeyAccept), common.HdrValueAccept)
