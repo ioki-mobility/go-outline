@@ -290,7 +290,7 @@ func TestClientCollectionsCreate(t *testing.T) {
 }
 
 func TestDocumentsClientCreate(t *testing.T) {
-	testResponse := exampleDocumentsCreateResponse_1documents
+	testResponse := exampleDocumentResponse
 
 	// Prepare HTTP client with mocked transport.
 	hc := &http.Client{}
@@ -302,7 +302,17 @@ func TestDocumentsClientCreate(t *testing.T) {
 		assert.Equal(t, u, r.URL.String())
 
 		testAssertHeaders(t, r.Header)
-		testAssertBody(t, r, fmt.Sprintf(`{"collectionId":"%s", "title":"%s", "text":"%s", "publish":%t}`, "collection id", "🎉 Welcome to Acme Inc", "Some text", true))
+		testAssertBody(
+			t,
+			r,
+			fmt.Sprintf(
+				`{"collectionId":"%s", "title":"%s", "text":"%s", "publish":%t}`,
+				"collection id",
+				"🎉 Welcome to Acme Inc",
+				"Some text",
+				true,
+			),
+		)
 
 		return &http.Response{
 			Request:       r,
@@ -313,8 +323,8 @@ func TestDocumentsClientCreate(t *testing.T) {
 	}}
 
 	cl := outline.New(testServerURL, hc, testApiKey)
-	var collectionId outline.CollectionID = "collection id"
-	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", collectionId).Text("Some text").Publish(true).Do(context.Background())
+	var id outline.CollectionID = "collection id"
+	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", id).Text("Some text").Publish(true).Do(context.Background())
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.
@@ -323,6 +333,122 @@ func TestDocumentsClientCreate(t *testing.T) {
 	}{}
 	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
 	assert.Equal(t, &expected.Data, got)
+}
+
+func TestDocumentsClientUpdate(t *testing.T) {
+	testResponse := exampleDocumentResponse
+
+	// Prepare HTTP client with mocked transport.
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.DocumentsUpdateEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(
+			t,
+			r,
+			fmt.Sprintf(
+				`{"id":"%s", "title":"%s", "text":"%s", "publish":%t}`,
+				"497f6eca-6276-4993-bfeb-53cbbbba6f08",
+				"🎉 Welcome to Acme Inc",
+				"Updated text!",
+				true,
+			),
+		)
+
+		return &http.Response{
+			Request:       r,
+			ContentLength: -1,
+			StatusCode:    http.StatusOK,
+			Body:          io.NopCloser(strings.NewReader(testResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testServerURL, hc, testApiKey)
+
+	got, err := cl.Documents().Update("497f6eca-6276-4993-bfeb-53cbbbba6f08").
+		Title("🎉 Welcome to Acme Inc").Text("Updated text!").Publish(true).
+		Do(context.Background())
+
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := &struct {
+		Data outline.Document `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
+	assert.Equal(t, &expected.Data, got)
+}
+
+func TestDocumentsClientUpdate_failed(t *testing.T) {
+	tests := map[string]struct {
+		isTemporary bool
+		rt          http.RoundTripper
+	}{
+		"HTTP request failed": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return nil, &net.DNSError{}
+				},
+			},
+		},
+		"server side error": {
+			isTemporary: true,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						StatusCode:    http.StatusServiceUnavailable,
+						ContentLength: -1,
+						Body:          io.NopCloser(strings.NewReader("service unavailable")),
+					}, nil
+				},
+			},
+		},
+		"client side error": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("unauthorized key")),
+					}, nil
+				},
+			},
+		},
+		"resource not found": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("the document with the id doesn't exist")),
+					}, nil
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			hc := &http.Client{}
+			hc.Transport = test.rt
+			cl := outline.New(testServerURL, hc, testApiKey)
+			col, err := cl.Documents().Update("id").Do(context.Background())
+			assert.Nil(t, col)
+			require.NotNil(t, err)
+			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
+		})
+	}
 }
 
 func testAssertHeaders(t *testing.T, headers http.Header) {
@@ -427,7 +553,7 @@ const exampleCollectionsListResponse_1collection string = `
   }
 }`
 
-const exampleDocumentsCreateResponse_1documents string = `{
+const exampleDocumentResponse string = `{
 	"data": {
 		"id": "497f6eca-6276-4993-bfeb-53cbbbba6f08",
 		"collectionId": "collection id",
