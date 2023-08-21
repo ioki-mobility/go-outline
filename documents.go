@@ -30,8 +30,8 @@ func (cl *DocumentsClient) GetAll() *DocumentsClientGetAll {
 
 // Create returns a client for creating a single document in the specified collection.
 // API reference: https://www.getoutline.com/developers#tag/Documents/paths/~1documents.create/post
-func (cl *DocumentsClient) Create(title string, collectionId CollectionID) *DocumentsCreateClient {
-	return newDocumentsCreateClient(cl.sl, title, collectionId)
+func (cl *DocumentsClient) Create(title string, id CollectionID) *DocumentsCreateClient {
+	return newDocumentsCreateClient(cl.sl, title, id)
 }
 
 // Update returns a client for updating a single document in the specified collection.

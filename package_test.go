@@ -323,8 +323,8 @@ func TestDocumentsClientCreate(t *testing.T) {
 	}}
 
 	cl := outline.New(testServerURL, hc, testApiKey)
-	var collectionId outline.CollectionID = "collection id"
-	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", collectionId).Text("Some text").Publish(true).Do(context.Background())
+	var id outline.CollectionID = "collection id"
+	got, err := cl.Documents().Create("🎉 Welcome to Acme Inc", id).Text("Some text").Publish(true).Do(context.Background())
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.
