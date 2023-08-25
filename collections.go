@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/rsjethani/rsling"
 	"github.com/ioki-mobility/go-outline/internal/common"
+	"github.com/rsjethani/rsling"
 )
 
 // CollectionsClient exposes CRUD operations around the collections resource.
@@ -114,7 +114,7 @@ func newCollectionListClient(sl *rsling.Sling) *CollectionsListClient {
 	return &CollectionsListClient{sl: copy}
 }
 
-// CollectionsListFn is the type of function called by [CollectionsListClient.Do] for every new collecion it finds.
+// CollectionsListFn is the type of function called by [CollectionsListClient.Do] for every new collection it finds.
 type CollectionsListFn func(*Collection, error) (bool, error)
 
 // Do makes the actual request for listing all collections. If the request is successful then fn is called sequentially
