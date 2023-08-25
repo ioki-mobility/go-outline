@@ -21,17 +21,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         with:
-          fetch-depth: 1
-          ref:  ${{ inputs.tag_name }}
-
-      - id: find_module_version
-        name: Find module version
-        run: echo "found=`go list -m -f '{{.GoVersion}}'`"  >> "$GITHUB_OUTPUT"
+          ref: ${{ inputs.tag_name }}
 
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: "${{ steps.find_module_version.outputs.found }}"
+          go-version-file: 'go.mod'
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v4
