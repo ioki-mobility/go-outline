@@ -5,7 +5,7 @@ project_name: outcli
 release:
   draft: true
   replace_existing_draft: true
-  name_template: "outline CLI {{.Tag}}"
+  name_template: "{{ .Tag }}"
 
 before:
   hooks:
@@ -18,7 +18,7 @@ builds:
     main: ./cli
     binary: outcli
     ldflags:
-      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{.Tag}}
+      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{ .Tag }}
 
   - id: linux
     goos: [linux]
@@ -28,17 +28,17 @@ builds:
     env:
       - CGO_ENABLED=0
     ldflags:
-      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{.Tag}}
+      - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{ .Tag }}
 
 archives:
   - id: linux-archive
     builds: [linux]
-    name_template: "outcli_{{ .Version }}_linux_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "outcli_{{ .Tag }}_linux_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     wrap_in_directory: true
 
   - id: macos-archive
     builds: [macos]
-    name_template: "outcli_{{ .Version }}_macOS_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
+    name_template: "outcli_{{ .Tag }}_macOS_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     wrap_in_directory: true
     format: zip
 

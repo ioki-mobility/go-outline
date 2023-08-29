@@ -18,7 +18,6 @@ go get github.com/ioki-mobility/go-outline
 ```shell
 go install github.com/ioki-mobility/go-outline/cli@latest
 ```
-NOTE: Very soon CLI binaries would be available for direct download as part of releases.
 
 # Usage
 
