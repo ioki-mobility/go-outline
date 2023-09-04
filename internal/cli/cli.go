@@ -86,11 +86,30 @@ func parseCmd() *cobra.Command {
 		},
 	}
 
+	documentCmd := &cobra.Command{
+		Use:   "document",
+		Short: "Work with documents",
+		Long:  `If you have to work with documents in any case, use this command`,
+		Args:  cobra.MinimumNArgs(1),
+	}
+
+	documentCreateCmd := &cobra.Command{
+		Use:   "create",
+		Short: "Creates a document",
+		Long:  "Creates a collection with the given name and collection id",
+		Args:  cobra.MinimumNArgs(2),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return documentCreate(cfg.serverUrl, cfg.apiKey, args[0], outline.CollectionID(args[1]))
+		},
+	}
+
 	rootCmd.AddCommand(collectionCmd)
 	collectionCmd.AddCommand(collectionInfoCmd)
 	collectionCmd.AddCommand(collectionCreateCmd)
 	collectionCmd.AddCommand(collectionDocumentsCmd)
 	collectionCmd.AddCommand(collectionListCmd)
+	rootCmd.AddCommand(documentCmd)
+	documentCmd.AddCommand(documentCreateCmd)
 
 	return rootCmd
 }
@@ -163,6 +182,21 @@ func collectionList(serverUrl string, apiKey string) error {
 	if err != nil {
 		return fmt.Errorf("can't get list of collections: %w", err)
 	}
+	return nil
+}
+
+func documentCreate(serverUrl string, apiKey string, name string, collectionId outline.CollectionID) error {
+	oc := outline.New(serverUrl, &http.Client{}, apiKey)
+	doc, err := oc.Documents().Create(name, collectionId).Do(context.Background())
+	if err != nil {
+		return fmt.Errorf("can't create document with name '%s': %w", name, err)
+	}
+
+	b, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed marshalling document with name '%s: %w", name, err)
+	}
+	fmt.Println(string(b))
 
 	return nil
 }
