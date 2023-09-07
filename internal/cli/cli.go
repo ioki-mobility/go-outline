@@ -103,6 +103,26 @@ func parseCmd() *cobra.Command {
 		},
 	}
 
+	var documentGetId string
+	var documentGetShareId string
+	documentGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get a document",
+		Long:  "Get information about the document. You can either put the documentId or the sharedId as flag",
+		Args:  cobra.MinimumNArgs(0),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if documentGetId != "" {
+				return documentGetById(cfg.serverUrl, cfg.apiKey, outline.DocumentID(documentGetId))
+			}
+			if documentGetShareId != "" {
+				return documentGetByShareId(cfg.serverUrl, cfg.apiKey, outline.DocumentShareID(documentGetShareId))
+			}
+			return fmt.Errorf("you should either provide --id or --sharedId")
+		},
+	}
+	documentGetCmd.Flags().StringVar(&documentGetId, "id", "", "The id of the document")
+	documentGetCmd.Flags().StringVar(&documentGetShareId, "shareId", "", "The sharedId of the document")
+
 	rootCmd.AddCommand(collectionCmd)
 	collectionCmd.AddCommand(collectionInfoCmd)
 	collectionCmd.AddCommand(collectionCreateCmd)
@@ -110,6 +130,7 @@ func parseCmd() *cobra.Command {
 	collectionCmd.AddCommand(collectionListCmd)
 	rootCmd.AddCommand(documentCmd)
 	documentCmd.AddCommand(documentCreateCmd)
+	documentCmd.AddCommand(documentGetCmd)
 
 	return rootCmd
 }
@@ -195,6 +216,38 @@ func documentCreate(serverUrl string, apiKey string, name string, collectionId o
 	b, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed marshalling document with name '%s: %w", name, err)
+	}
+	fmt.Println(string(b))
+
+	return nil
+}
+
+func documentGetById(serverUrl string, apiKey string, id outline.DocumentID) error {
+	oc := outline.New(serverUrl, &http.Client{}, apiKey)
+	doc, err := oc.Documents().Get().ByID(id).Do(context.Background())
+	if err != nil {
+		return fmt.Errorf("can't get document with id '%s': %w", id, err)
+	}
+
+	b, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed marshalling document with id '%s: %w", id, err)
+	}
+	fmt.Println(string(b))
+
+	return nil
+}
+
+func documentGetByShareId(serverUrl string, apiKey string, id outline.DocumentShareID) error {
+	oc := outline.New(serverUrl, &http.Client{}, apiKey)
+	doc, err := oc.Documents().Get().ByShareID(id).Do(context.Background())
+	if err != nil {
+		return fmt.Errorf("can't get document with shareId '%s': %w", id, err)
+	}
+
+	b, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed marshalling document with shareId '%s: %w", id, err)
 	}
 	fmt.Println(string(b))
 
