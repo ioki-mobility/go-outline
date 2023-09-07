@@ -18,7 +18,7 @@ func newDocumentsClient(sl *rsling.Sling) *DocumentsClient {
 	return &DocumentsClient{sl: sl}
 }
 
-// Get returns a client for retriving a single document.
+// Get returns a client for retrieving a single document.
 func (cl *DocumentsClient) Get() *DocumentsClientGet {
 	return nil
 }
