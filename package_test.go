@@ -373,7 +373,6 @@ func TestDocumentsClientUpdate(t *testing.T) {
 	got, err := cl.Documents().Update("497f6eca-6276-4993-bfeb-53cbbbba6f08").
 		Title("🎉 Welcome to Acme Inc").Text("Updated text!").Publish(true).
 		Do(context.Background())
-
 	require.NoError(t, err)
 
 	// Manually unmarshal test response and see if we get same object via the API.
@@ -444,6 +443,120 @@ func TestDocumentsClientUpdate_failed(t *testing.T) {
 			hc.Transport = test.rt
 			cl := outline.New(testServerURL, hc, testApiKey)
 			col, err := cl.Documents().Update("id").Do(context.Background())
+			assert.Nil(t, col)
+			require.NotNil(t, err)
+			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
+		})
+	}
+}
+
+func TestAttachmentsClientCreate(t *testing.T) {
+	testResponse := exampleAttachmentsCreateResponse
+
+	// Prepare HTTP client with mocked transport.
+	hc := &http.Client{}
+	hc.Transport = &testutils.MockRoundTripper{RoundTripFn: func(r *http.Request) (*http.Response, error) {
+		// Assert request method and URL.
+		assert.Equal(t, http.MethodPost, r.Method)
+		u, err := url.JoinPath(common.BaseURL(testServerURL), common.AttachmentsCreateEndpoint())
+		require.NoError(t, err)
+		assert.Equal(t, u, r.URL.String())
+
+		testAssertHeaders(t, r.Header)
+		testAssertBody(
+			t,
+			r,
+			fmt.Sprintf(
+				`{"name":"%s", "contentType":"%s", "size":%d, "documentId":"%s"}`,
+				"My Image",
+				"image/png",
+				42,
+				"4704590c-004e-410d-adf7-acb7ca0a7052",
+			),
+		)
+
+		return &http.Response{
+			Request:       r,
+			ContentLength: -1,
+			StatusCode:    http.StatusOK,
+			Body:          io.NopCloser(strings.NewReader(testResponse)),
+		}, nil
+	}}
+
+	cl := outline.New(testServerURL, hc, testApiKey)
+	got, err := cl.Attachments().Create("My Image", "image/png", 42).
+		DocumentID("4704590c-004e-410d-adf7-acb7ca0a7052").
+		Do(context.Background())
+	require.NoError(t, err)
+
+	// Manually unmarshal test response and see if we get same object via the API.
+	expected := &struct {
+		Data outline.Attachment `json:"data"`
+	}{}
+	require.NoError(t, json.Unmarshal([]byte(testResponse), expected))
+	assert.Equal(t, &expected.Data, got)
+}
+
+func TestAttachmentsClientCreate_failed(t *testing.T) {
+	tests := map[string]struct {
+		isTemporary bool
+		rt          http.RoundTripper
+	}{
+		"HTTP request failed": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return nil, &net.DNSError{}
+				},
+			},
+		},
+		"server side error": {
+			isTemporary: true,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						StatusCode:    http.StatusServiceUnavailable,
+						ContentLength: -1,
+						Body:          io.NopCloser(strings.NewReader("service unavailable")),
+					}, nil
+				},
+			},
+		},
+		"client side error": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusUnauthorized,
+						Body:          io.NopCloser(strings.NewReader("unauthorized key")),
+					}, nil
+				},
+			},
+		},
+		"request failed": {
+			isTemporary: false,
+			rt: &testutils.MockRoundTripper{
+				RoundTripFn: func(r *http.Request) (*http.Response, error) {
+					return &http.Response{
+						Request:       r,
+						ContentLength: -1,
+						StatusCode:    http.StatusBadRequest,
+						Body:          io.NopCloser(strings.NewReader("validation failed")),
+					}, nil
+				},
+			},
+		},
+	}
+
+	for name, test := range tests {
+		t.Run(name, func(t *testing.T) {
+			hc := &http.Client{}
+			hc.Transport = test.rt
+			cl := outline.New(testServerURL, hc, testApiKey)
+			col, err := cl.Attachments().Create("name", "image/png", 42).Do(context.Background())
 			assert.Nil(t, col)
 			require.NotNil(t, err)
 			assert.Equal(t, test.isTemporary, outline.IsTemporary(err))
@@ -601,3 +714,18 @@ const exampleCollectionsDocumentStructureResponse string = `
   ]
 }
 `
+
+const exampleAttachmentsCreateResponse string = `{
+	"data": {
+		"maxUploadSize": 0,
+		"uploadUrl": "https://s3.ioki.com",
+		"form": { },
+		"attachment": {
+			"contentType": "image/png",
+			"size": 42,
+			"name": "My Image",
+			"url": "https://ioki.com",
+			"documentId": "4704590c-004e-410d-adf7-acb7ca0a7052"
+		}
+	}
+}`
