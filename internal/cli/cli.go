@@ -103,6 +103,18 @@ func parseCmd() *cobra.Command {
 		},
 	}
 
+	var isShareID bool
+	documentGetCmd := &cobra.Command{
+		Use:   "get",
+		Short: "Get an existing document by its ID",
+		Long:  "Get information about an existing document by specifying its document ID or a share ID",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return documentGet(cfg.serverUrl, cfg.apiKey, args[0], isShareID)
+		},
+	}
+	documentGetCmd.Flags().BoolVar(&isShareID, "share", false, "Treat the argument as document share iD")
+
 	rootCmd.AddCommand(collectionCmd)
 	collectionCmd.AddCommand(collectionInfoCmd)
 	collectionCmd.AddCommand(collectionCreateCmd)
@@ -110,6 +122,7 @@ func parseCmd() *cobra.Command {
 	collectionCmd.AddCommand(collectionListCmd)
 	rootCmd.AddCommand(documentCmd)
 	documentCmd.AddCommand(documentCreateCmd)
+	documentCmd.AddCommand(documentGetCmd)
 
 	return rootCmd
 }
@@ -195,6 +208,32 @@ func documentCreate(serverUrl string, apiKey string, name string, collectionId o
 	b, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed marshalling document with name '%s: %w", name, err)
+	}
+	fmt.Println(string(b))
+
+	return nil
+}
+
+func documentGet(serverURL string, apiKey string, id string, idIsShareID bool) error {
+	var err error
+	var doc *outline.Document
+	oc := outline.New(serverURL, &http.Client{}, apiKey)
+
+	if idIsShareID {
+		doc, err = oc.Documents().Get().ByShareID(outline.DocumentShareID(id)).Do(context.Background())
+		if err != nil {
+			return fmt.Errorf("can't get document with share id '%s': %w", id, err)
+		}
+	} else {
+		doc, err = oc.Documents().Get().ByID(outline.DocumentID(id)).Do(context.Background())
+		if err != nil {
+			return fmt.Errorf("can't get document with id '%s': %w", id, err)
+		}
+	}
+
+	b, err := json.MarshalIndent(doc, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed marshalling document with id '%s: %w", id, err)
 	}
 	fmt.Println(string(b))
 

@@ -18,9 +18,10 @@ func newDocumentsClient(sl *rsling.Sling) *DocumentsClient {
 	return &DocumentsClient{sl: sl}
 }
 
-// Get returns a client for retriving a single document.
+// Get returns a client for retrieving a single document.
 func (cl *DocumentsClient) Get() *DocumentsClientGet {
-	return nil
+	params := documentsGetParams{}
+	return &DocumentsClientGet{sl: cl.sl, params: params}
 }
 
 // GetAll returns a client for retrieving multiple documents at once.
@@ -40,21 +41,48 @@ func (cl *DocumentsClient) Update(id DocumentID) *DocumentsUpdateClient {
 	return newDocumentsUpdateClient(cl.sl, id)
 }
 
+// documentsCreateParams represents the Outline Documents.create parameters
+type documentsGetParams struct {
+	DocumentId DocumentID      `json:"id,omitempty"`
+	ShareId    DocumentShareID `json:"shareId,omitempty"`
+}
+
 // DocumentsClientGet gets a single document.
-type DocumentsClientGet struct{}
+type DocumentsClientGet struct {
+	sl     *rsling.Sling
+	params documentsGetParams
+}
 
 // ByID configures that document be retrieved by its id.
 func (cl *DocumentsClientGet) ByID(id DocumentID) *DocumentsClientGet {
-	return nil
+	cl.params.DocumentId = id
+	return cl
 }
 
 // ByShareID configures that document be retrieved by its share id.
 func (cl *DocumentsClientGet) ByShareID(id DocumentShareID) *DocumentsClientGet {
-	return nil
+	cl.params.ShareId = id
+	return cl
 }
 
 // Do makes the actual request and returns the document.
-func (cl *DocumentsClientGet) Do(ctx context.Context) (*Document, error) { return nil, nil }
+func (cl *DocumentsClientGet) Do(ctx context.Context) (*Document, error) {
+	cl.sl.Post(common.DocumentsGetEndpoint()).BodyJSON(&cl.params)
+
+	success := &struct {
+		Data *Document `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
+}
 
 // DocumentsClientGetAll can be used to retrieve more than one document. Use available configuration options to select
 // the documents you want to retrieve then finally call [DocumentsClientGetAll.Do].
