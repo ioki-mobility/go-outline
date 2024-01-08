@@ -123,6 +123,7 @@ func parseCmd() *cobra.Command {
 	rootCmd.AddCommand(documentCmd)
 	documentCmd.AddCommand(documentCreateCmd)
 	documentCmd.AddCommand(documentGetCmd)
+	documentCmd.AddCommand(documentUpdate())
 
 	return rootCmd
 }
@@ -233,9 +234,63 @@ func documentGet(serverURL string, apiKey string, id string, idIsShareID bool) e
 
 	b, err := json.MarshalIndent(doc, "", "  ")
 	if err != nil {
-		return fmt.Errorf("failed marshalling document with id '%s: %w", id, err)
+		return fmt.Errorf("failed marshalling document with id '%s': %w", id, err)
 	}
 	fmt.Println(string(b))
 
 	return nil
+}
+
+func documentUpdate() *cobra.Command {
+	var title, text string
+	var append, publish bool
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update an existing document",
+		Long:  "Update an existing document's title, text etc. properties",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(c *cobra.Command, args []string) error {
+			id := args[0]
+			errBase := fmt.Sprintf("failed updating document with ID '%s'", id)
+
+			// Extract value of global flags
+			key, err := c.Flags().GetString(flagApiKey)
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+			url, err := c.Flags().GetString(flagServerURL)
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+
+			cl := outline.New(url, &http.Client{}, key).Documents().Update(outline.DocumentID(id))
+			cl.Append(append)
+			cl.Publish(publish)
+			cl.Text(text)
+			cl.Title(title)
+
+			doc, err := cl.Do(context.Background())
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+
+			b, err := json.MarshalIndent(doc, "", "  ")
+			if err != nil {
+				return fmt.Errorf("failed marshalling document with ID '%s': %w", id, err)
+			}
+			fmt.Println(string(b))
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&title, "title", "", "The title of the document")
+	cmd.Flags().StringVar(&text, "text", "", "The body of the document, may contain markdown formatting")
+	cmd.Flags().BoolVar(&append, "append", false, "Append new text to existing rather than replacing it")
+	cmd.Flags().BoolVar(&publish, "publish", false,
+		"Whether this document should be published and made visible to other team members, if a draft",
+	)
+
+	return cmd
 }
