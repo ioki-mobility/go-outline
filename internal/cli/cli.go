@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"os"
 
 	"github.com/ioki-mobility/go-outline"
 	"github.com/ioki-mobility/go-outline/internal/common"
@@ -242,8 +244,8 @@ func documentGet(serverURL string, apiKey string, id string, idIsShareID bool) e
 }
 
 func documentUpdate() *cobra.Command {
-	var title, text string
-	var append, publish bool
+	var title string
+	var append, publish, readText bool
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -265,10 +267,15 @@ func documentUpdate() *cobra.Command {
 			}
 
 			cl := outline.New(url, &http.Client{}, key).Documents().Update(outline.DocumentID(id)).
-			    Append(append).
-			    Publish(publish).
-			    Text(text).
-			    Title(title)
+				Append(append).Publish(publish).Title(title)
+
+			if readText {
+				b, err := io.ReadAll(os.Stdin)
+				if err != nil {
+					return fmt.Errorf("%s: %w", errBase, err)
+				}
+				cl.Text(string(b))
+			}
 
 			doc, err := cl.Do(context.Background())
 			if err != nil {
@@ -286,7 +293,7 @@ func documentUpdate() *cobra.Command {
 	}
 
 	cmd.Flags().StringVar(&title, "title", "", "The title of the document")
-	cmd.Flags().StringVar(&text, "text", "", "The body of the document, may contain markdown formatting")
+	cmd.Flags().BoolVar(&readText, "text", false, "Read document text from stdin")
 	cmd.Flags().BoolVar(&append, "append", false, "Append new text to existing rather than replacing it")
 	cmd.Flags().BoolVar(&publish, "publish", false,
 		"Whether this document should be published and made visible to other team members, if a draft",
