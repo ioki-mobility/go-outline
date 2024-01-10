@@ -264,11 +264,11 @@ func documentUpdate() *cobra.Command {
 				return fmt.Errorf("%s: %w", errBase, err)
 			}
 
-			cl := outline.New(url, &http.Client{}, key).Documents().Update(outline.DocumentID(id))
-			cl.Append(append)
-			cl.Publish(publish)
-			cl.Text(text)
-			cl.Title(title)
+			cl := outline.New(url, &http.Client{}, key).Documents().Update(outline.DocumentID(id)).
+			    Append(append).
+			    Publish(publish).
+			    Text(text).
+			    Title(title)
 
 			doc, err := cl.Do(context.Background())
 			if err != nil {
