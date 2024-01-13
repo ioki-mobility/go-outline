@@ -7,6 +7,21 @@ on:
       - main
 
 jobs:
+  cli-docs-up-to-date:
+    name: cli-docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.19'
+          cache: false
+      - name: Refresh CLI docs
+        run: go run internal/cli-docgen.go
+
+      - name: Verify whether CLI documentation is up-to-date
+        run: git diff --exit-code
+
   # Reference: https://github.com/golangci/golangci-lint-action
   golangci-lint:
     name: linting
