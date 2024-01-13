@@ -18,17 +18,16 @@ const (
 	flagApiKey    = "key"
 )
 
-func Run() error {
-	return parseCmd().Execute()
-}
-
 type config struct {
 	serverUrl string
 	apiKey    string
 }
 
-func parseCmd() *cobra.Command {
-	rootCmd := &cobra.Command{Use: "outline"}
+func Command() *cobra.Command {
+	rootCmd := &cobra.Command{
+		Use:               "outcli",
+		DisableAutoGenTag: true,
+	}
 
 	var cfg config
 	rootCmd.PersistentFlags().StringVar(&cfg.serverUrl, flagServerURL, "", "The outline API server url")
