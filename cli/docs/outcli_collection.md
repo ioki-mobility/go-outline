@@ -26,4 +26,5 @@ If you have to work with collection in any case, use this command
 * [outcli collection docs](outcli_collection_docs.md)	 - Get document structure
 * [outcli collection info](outcli_collection_info.md)	 - Get collection info
 * [outcli collection list](outcli_collection_list.md)	 - List all collections
+* [outcli collection update](outcli_collection_update.md)	 - Update an existing collection
 
