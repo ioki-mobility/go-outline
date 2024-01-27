@@ -1,3 +1,4 @@
+[![Go Reference](https://pkg.go.dev/badge/github.com/ioki-mobility/go-outline.svg)](https://pkg.go.dev/github.com/ioki-mobility/go-outline)
 [![Checks](https://github.com/ioki-mobility/go-outline/actions/workflows/checks.yml/badge.svg)](https://github.com/ioki-mobility/go-outline/actions/workflows/checks.yml)
 [![MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/ioki-mobility/go-outline/blob/main/LICENSE)
 
