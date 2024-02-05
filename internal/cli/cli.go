@@ -224,7 +224,6 @@ func collectionUpdate() *cobra.Command {
 				return fmt.Errorf("%s: %w", errBase, err)
 			}
 
-			println(name)
 			cl := outline.New(url, &http.Client{}, key).
 				Collections().
 				Update(outline.CollectionID(id)).
