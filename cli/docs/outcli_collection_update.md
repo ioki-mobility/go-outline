@@ -17,8 +17,8 @@ outcli collection update [flags]
       --description string      The description of the collection
   -h, --help                    help for update
       --name string             The name of the collection
-      --permission_read         Change the permission to read only
-      --permission_read_write   Change the permission to read write
+      --permission-read         Change the permission to read only
+      --permission-read-write   Change the permission to read write
 ```
 
 ### Options inherited from parent commands

@@ -256,8 +256,9 @@ func collectionUpdate() *cobra.Command {
 	cmd.Flags().StringVar(&name, "name", "", "The name of the collection")
 	cmd.Flags().StringVar(&description, "description", "", "The description of the collection")
 	cmd.Flags().StringVar(&color, "color", "", "The color of the collection. Should be in the format of #AABBCC")
-	cmd.Flags().BoolVar(&permissionRead, "permission_read", false, "Change the permission to read only")
-	cmd.Flags().BoolVar(&permissionReadWrite, "permission_read_write", false, "Change the permission to read write")
+	cmd.Flags().BoolVar(&permissionRead, "permission-read", false, "Change the permission to read only")
+	cmd.Flags().BoolVar(&permissionReadWrite, "permission-read-write", false, "Change the permission to read write")
+ cmd.MarkFlagsMutuallyExclusive("permission-read", "permission-read-write")
 
 	return cmd
 }
