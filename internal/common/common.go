@@ -34,6 +34,10 @@ func CollectionsCreateEndpoint() string {
 	return "collections.create"
 }
 
+func CollectionsUpdateEndpoint() string {
+	return "collections.update"
+}
+
 func DocumentsGetEndpoint() string {
 	return "documents.info"
 }

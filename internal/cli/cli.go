@@ -121,6 +121,7 @@ func Command() *cobra.Command {
 	collectionCmd.AddCommand(collectionCreateCmd)
 	collectionCmd.AddCommand(collectionDocumentsCmd)
 	collectionCmd.AddCommand(collectionListCmd)
+	collectionCmd.AddCommand(collectionUpdate())
 	rootCmd.AddCommand(documentCmd)
 	documentCmd.AddCommand(documentCreateCmd)
 	documentCmd.AddCommand(documentGetCmd)
@@ -198,6 +199,68 @@ func collectionList(serverUrl string, apiKey string) error {
 		return fmt.Errorf("can't get list of collections: %w", err)
 	}
 	return nil
+}
+
+func collectionUpdate() *cobra.Command {
+	var name, description, color string
+	var permissionRead, permissionReadWrite bool
+
+	cmd := &cobra.Command{
+		Use:   "update",
+		Short: "Update an existing collection",
+		Long:  "Update an existing collection's name, description etc. properties",
+		Args:  cobra.MinimumNArgs(1),
+		RunE: func(c *cobra.Command, args []string) error {
+			id := args[0]
+			errBase := fmt.Sprintf("failed updating collection with ID '%s'", id)
+
+			// Extract value of global flags
+			key, err := c.Flags().GetString(flagApiKey)
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+			url, err := c.Flags().GetString(flagServerURL)
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+
+			cl := outline.New(url, &http.Client{}, key).
+				Collections().
+				Update(outline.CollectionID(id)).
+				Name(name).
+				Description(description).
+				Color(color)
+
+			if permissionRead {
+				cl.PermissionRead()
+			}
+			if permissionReadWrite {
+				cl.PermissionReadWrite()
+			}
+
+			doc, err := cl.Do(context.Background())
+			if err != nil {
+				return fmt.Errorf("%s: %w", errBase, err)
+			}
+
+			b, err := json.MarshalIndent(doc, "", "  ")
+			if err != nil {
+				return fmt.Errorf("failed marshalling collection with ID '%s': %w", id, err)
+			}
+			fmt.Println(string(b))
+
+			return nil
+		},
+	}
+
+	cmd.Flags().StringVar(&name, "name", "", "The name of the collection")
+	cmd.Flags().StringVar(&description, "description", "", "The description of the collection")
+	cmd.Flags().StringVar(&color, "color", "", "The color of the collection. Should be in the format of #AABBCC")
+	cmd.Flags().BoolVar(&permissionRead, "permission-read", false, "Change the permission to read only")
+	cmd.Flags().BoolVar(&permissionReadWrite, "permission-read-write", false, "Change the permission to read write")
+	cmd.MarkFlagsMutuallyExclusive("permission-read", "permission-read-write")
+
+	return cmd
 }
 
 func documentCreate(serverUrl string, apiKey string, name string, collectionId outline.CollectionID) error {

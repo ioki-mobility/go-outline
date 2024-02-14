@@ -37,6 +37,12 @@ func (cl *CollectionsClient) Create(name string) *CollectionsCreateClient {
 	return newCollectionsCreateClient(cl.sl, name)
 }
 
+// Update returns a client for updating a collection.
+// API reference: https://www.getoutline.com/developers#tag/Collections/paths/~1collections.update/post
+func (cl *CollectionsClient) Update(id CollectionID) *CollectionsUpdateClient {
+	return newCollectionsUpdateClient(cl.sl, id)
+}
+
 type CollectionsDocumentStructureClient struct {
 	sl *rsling.Sling
 }
@@ -215,6 +221,70 @@ func (cl *CollectionsCreateClient) Private(private bool) *CollectionsCreateClien
 // Do make the actual request to create a collection.
 func (cl *CollectionsCreateClient) Do(ctx context.Context) (*Collection, error) {
 	cl.sl.Post(common.CollectionsCreateEndpoint()).BodyJSON(&cl.params)
+
+	success := &struct {
+		Data *Collection `json:"data"`
+	}{}
+
+	br, err := request(ctx, cl.sl, success)
+	if err != nil {
+		return nil, fmt.Errorf("failed making HTTP request: %w", err)
+	}
+	if br != nil {
+		return nil, fmt.Errorf("bad response: %w", &apiError{br: *br})
+	}
+
+	return success.Data, nil
+}
+
+// collectionsUpdateParams represents the Outline Collections.update parameters
+type collectionsUpdateParams struct {
+	ID          CollectionID `json:"id"`
+	Name        string       `json:"name"`
+	Permission  string       `json:"permission,omitempty"`
+	Description string       `json:"description,omitempty"`
+	Color       string       `json:"color,omitempty"`
+}
+
+type CollectionsUpdateClient struct {
+	sl     *rsling.Sling
+	params collectionsUpdateParams
+}
+
+func newCollectionsUpdateClient(sl *rsling.Sling, id CollectionID) *CollectionsUpdateClient {
+	copy := sl.New()
+	params := collectionsUpdateParams{ID: id}
+	return &CollectionsUpdateClient{sl: copy, params: params}
+}
+
+func (cl *CollectionsUpdateClient) Name(name string) *CollectionsUpdateClient {
+	cl.params.Name = name
+	return cl
+}
+
+func (cl *CollectionsUpdateClient) PermissionRead() *CollectionsUpdateClient {
+	cl.params.Permission = "read"
+	return cl
+}
+
+func (cl *CollectionsUpdateClient) PermissionReadWrite() *CollectionsUpdateClient {
+	cl.params.Permission = "read_write"
+	return cl
+}
+
+func (cl *CollectionsUpdateClient) Color(color string) *CollectionsUpdateClient {
+	cl.params.Color = color
+	return cl
+}
+
+func (cl *CollectionsUpdateClient) Description(desc string) *CollectionsUpdateClient {
+	cl.params.Description = desc
+	return cl
+}
+
+// Do makes the actual request for updating the collection.
+func (cl *CollectionsUpdateClient) Do(ctx context.Context) (*Collection, error) {
+	cl.sl.Post(common.CollectionsUpdateEndpoint()).BodyJSON(&cl.params)
 
 	success := &struct {
 		Data *Collection `json:"data"`
