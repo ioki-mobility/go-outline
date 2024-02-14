@@ -20,7 +20,7 @@ jobs:
           hugo new site outclidocs
           cd outclidocs
           hugo mod init github.com/ioki-mobility/go-outline
-          cp ../cli/docs/website/config.yml config.yml
+          cp ../cli/docs/website/config.toml config.toml
           cp ../cli/docs/website/_index.md content/_index.md
           mkdir content/docs
           cp ../cli/docs/*.md content/docs
