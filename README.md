@@ -87,4 +87,4 @@ go install github.com/ioki-mobility/go-outline/cmd/outcli@latest
 ```
 
 ## Usage
-[Latest cli docs.](./cli/docs/outcli.md)
+Check the project website: https://ioki-mobility.github.io/go-outline/ 
