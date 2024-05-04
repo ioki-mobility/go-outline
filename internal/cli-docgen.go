@@ -10,7 +10,7 @@ import (
 
 func main() {
 	cmd := cli.Command()
-	if err := doc.GenMarkdownTree(cmd, "./cli/docs"); err != nil {
+	if err := doc.GenMarkdownTree(cmd, "./cmd/outcli/docs"); err != nil {
 		fmt.Fprint(os.Stderr, err)
 		os.Exit(1)
 	}

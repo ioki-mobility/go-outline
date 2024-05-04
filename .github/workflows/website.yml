@@ -20,10 +20,10 @@ jobs:
           hugo new site outclidocs
           cd outclidocs
           hugo mod init github.com/ioki-mobility/go-outline
-          cp ../cli/docs/website/config.toml config.toml
-          cp ../cli/docs/website/_index.md content/_index.md
+          cp ../cmd/outcli/docs/website/config.toml config.toml
+          cp ../cmd/outcli/docs/website/_index.md content/_index.md
           mkdir content/docs
-          cp ../cli/docs/*.md content/docs
+          cp ../cmd/outcli/docs/*.md content/docs
           hugo
 
       - name: Upload artifact to GitHub pages
