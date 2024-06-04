@@ -2,6 +2,8 @@ module github.com/ioki-mobility/go-outline
 
 go 1.20
 
+toolchain go1.22.3
+
 require (
 	github.com/rsjethani/rsling v0.2.0
 	github.com/spf13/cobra v1.8.0
