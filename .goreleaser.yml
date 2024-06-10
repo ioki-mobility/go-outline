@@ -15,16 +15,14 @@ builds:
   - id: macos
     goos: [darwin]
     goarch: [amd64, arm64]
-    main: ./cli
-    binary: outcli
+    main: ./cmd/outcli
     ldflags:
       - -s -w -X github.com/ioki-mobility/go-outline/internal/common.Version={{ .Tag }}
 
   - id: linux
     goos: [linux]
     goarch: [amd64]
-    main: ./cli
-    binary: outcli
+    main: ./cmd/outcli
     env:
       - CGO_ENABLED=0
     ldflags:
@@ -41,4 +39,3 @@ archives:
     name_template: "outcli_{{ .Tag }}_macOS_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}"
     wrap_in_directory: true
     format: zip
-
