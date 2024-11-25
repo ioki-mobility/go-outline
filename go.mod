@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/rsjethani/rsling v0.2.0
 	github.com/spf13/cobra v1.8.1
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 )
 
 require (
